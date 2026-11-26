@@ -1,0 +1,2628 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ff9f1a">
+<meta name="description" content="Live six-stage business cycle reading for US bonds, stocks and commodities.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Six-Stage">
+<title>Six-Stage Business Cycle · Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: floating white sidebar card and top bar on a pale grey canvas; white rounded cards, a row of gradient tiles for live prices, orange marks the current stage and purple marks your selection. */
+:root {
+  --side: #ffffff;
+  --side-ink: #2b2f3f;
+  --side-muted: #6c7285;
+  --side-hover: #f5f6fb;
+  --bg: #f1f3f9;
+  --surface: #ffffff;
+  --tint: #f5f6fa;
+  --track: #eef0f6;
+  --ink: #2b2f3f;
+  --muted: #8a90a3;
+  --line: #edeff5;
+  --dash: #dde1ea;
+  --accent: #ff9f1a;
+  --accent-soft: rgba(255, 159, 26, 0.13);
+  --blue: #7a5af5;
+  --sky: #34a2f6;
+  --teal: #22c3b2;
+  --amber: #ffb547;
+  --pink: #ec4b88;
+  --up: #12a596;
+  --up-soft: rgba(34, 195, 178, 0.14);
+  --down: #ef4360;
+  --down-soft: rgba(239, 67, 96, 0.1);
+  --warn: #d48806;
+  --warn-soft: rgba(255, 181, 71, 0.18);
+  --sel: rgba(43, 47, 63, 0.07);
+  --warm-soft: rgba(196, 150, 80, 0.14);   /* contraction half of the cycle (stages 1-3) */
+  --cool-soft: rgba(122, 90, 245, 0.1);    /* expansion half (stages 4-6) */
+  --half-c-ink: #93652a;
+  --half-e-ink: #6450c4;
+  --pick: #2b2f3f;                           /* your selection */
+  --pick-soft: rgba(43, 47, 63, 0.07);
+  --curve: #2b2f3f;
+  --g-purple: linear-gradient(135deg, #8c66f8 0%, #5a3bef 100%);
+  --g-blue: linear-gradient(135deg, #3db3f9 0%, #2b62ee 100%);
+  --g-teal: linear-gradient(135deg, #43d9c3 0%, #19a8ad 100%);
+  --g-orange: linear-gradient(135deg, #ffc04a 0%, #ff7c4c 100%);
+  --g-pink: linear-gradient(90deg, #2b2f3f 0%, #474d66 100%);
+  --g-up: linear-gradient(135deg, #3fd3bf 0%, #16a6a3 100%);
+  --g-down: linear-gradient(135deg, #ff6b8b 0%, #ec3f5c 100%);
+  --shadow: 0 2px 6px rgba(43, 47, 63, 0.04), 0 12px 32px rgba(43, 47, 63, 0.06);
+  --font-fa: "Vazirmatn", "Tahoma", system-ui, sans-serif;
+  --font-en: "Nunito", "Vazirmatn", system-ui, sans-serif;
+  --font-num: "Nunito", "Vazirmatn", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --side: #1a1f2c; --side-ink: #e8ebf3; --side-muted: #959cb0; --side-hover: #232a3a;
+    --bg: #11151f; --surface: #1a1f2c; --tint: #222938; --track: #252c3c;
+    --ink: #e8ebf3; --muted: #959cb0; --line: #262d3c; --dash: #343c4d;
+    --accent: #ffad3b; --accent-soft: rgba(255, 173, 59, 0.15);
+    --blue: #9b83ff; --sky: #5bb5f8; --teal: #3fd3bf; --amber: #ffc163;
+    --up: #45d3bf; --up-soft: rgba(63, 211, 191, 0.14); --down: #ff6f86; --down-soft: rgba(255, 111, 134, 0.13);
+    --warn: #ffc163; --warn-soft: rgba(255, 193, 99, 0.15); --sel: rgba(232, 235, 243, 0.08); --pick: #e8ebf3; --pick-soft: rgba(232, 235, 243, 0.08); --half-c-ink: #e2bd84; --half-e-ink: #b9a8ff;
+    --warm-soft: rgba(214, 170, 100, 0.14); --cool-soft: rgba(155, 131, 255, 0.13); --curve: #e8ebf3;
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-en); font-size: 15px; line-height: 1.6; }
+body.fa { font-family: var(--font-fa); }
+button { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num, .mono { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+/* App frame */
+.app { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 28px; min-height: 100vh; padding: 24px; }
+.side {
+  position: sticky; top: 24px; height: calc(100vh - 48px); display: flex; flex-direction: column; gap: 24px;
+  padding: 30px 0 24px; background: var(--side); color: var(--side-ink); border-radius: 20px; box-shadow: var(--shadow); overflow-y: auto;
+}
+.main { min-width: 0; display: grid; gap: 24px; align-content: start; padding-bottom: 32px; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 21px; font-weight: 800; padding-inline: 30px; white-space: nowrap; }
+body.fa .brand { font-size: 18px; }
+.brand .logo { width: 38px; height: 38px; border-radius: 50%; background: var(--g-orange); color: #fff; display: grid; place-items: center; flex: none; box-shadow: 0 6px 14px rgba(255, 140, 50, 0.3); }
+.brand svg { width: 22px; height: 22px; }
+.who { display: grid; justify-items: center; gap: 2px; text-align: center; margin: 4px 24px 0; padding: 18px 12px; border-radius: 18px; background: var(--tint); }
+.badge {
+  width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: var(--g-orange); box-shadow: 0 10px 22px rgba(255, 140, 50, 0.3);
+  font-family: var(--font-num); font-size: 32px; font-weight: 800; margin-bottom: 10px;
+}
+.who .nm { font-size: 16px; font-weight: 700; }
+.who .sm { font-size: 12.5px; color: var(--side-muted); }
+nav { display: grid; gap: 2px; }
+nav a {
+  display: flex; align-items: center; gap: 16px; padding: 13px 30px; color: var(--side-ink); text-decoration: none; font-size: 15.5px; font-weight: 600;
+  border-inline-start: 4px solid transparent;
+}
+nav a svg { width: 19px; height: 19px; flex: none; color: var(--side-muted); }
+nav a:hover { background: var(--side-hover); }
+nav a.on { color: var(--accent); border-inline-start-color: var(--accent); font-weight: 800; }
+nav a.on svg { color: var(--accent); }
+.side-foot { margin-top: auto; display: flex; gap: 10px; justify-content: center; }
+.side-foot button {
+  min-width: 52px; height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--side-muted); cursor: pointer; font-size: 13px; font-weight: 700;
+}
+.side-foot button[aria-pressed="true"] { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; padding: 12px; gap: 16px; }
+  .side { position: static; height: auto; padding: 16px; gap: 12px; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .brand { padding-inline: 4px; }
+  .who { grid-template-columns: auto auto; justify-items: start; text-align: start; column-gap: 12px; margin: 0; padding: 8px 12px; background: transparent; }
+  .who .badge { width: 46px; height: 46px; font-size: 20px; margin: 0; grid-row: span 3; }
+  nav { order: 5; width: 100%; grid-auto-flow: column; overflow-x: auto; gap: 4px; }
+  nav a { padding: 8px 12px; white-space: nowrap; border-inline-start: 0; border-bottom: 3px solid transparent; }
+  nav a.on { border-bottom-color: var(--accent); }
+  nav a svg { display: none; }
+  .side-foot { margin: 0; margin-inline-start: auto; }
+}
+
+/* Top bar */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; background: var(--surface); border-radius: 18px; padding: 14px 22px; box-shadow: var(--shadow); }
+.pillbox { display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.pillbox > span { color: var(--muted); font-size: 14px; font-weight: 600; }
+.cta {
+  display: inline-flex; align-items: center; gap: 10px; border: 0; border-radius: 999px; padding: 13px 26px;
+  background: var(--g-pink); color: #fff; font-weight: 700; font-size: 13.5px; cursor: pointer; position: relative;
+  box-shadow: 0 10px 22px rgba(43, 47, 63, 0.22);
+}
+.cta svg { width: 18px; height: 18px; }
+.cta .count {
+  position: absolute; top: -7px; inset-inline-end: -4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px;
+  background: var(--down); color: #fff; font-size: 12px; display: grid; place-items: center; border: 2px solid var(--surface);
+}
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-inline: 4px; }
+.head h1 { margin: 0; font-size: clamp(1.5rem, 2.8vw, 2rem); line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; text-wrap: balance; }
+.date { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--muted); }
+.date svg { width: 20px; height: 20px; color: var(--muted); }
+.sub { margin: -14px 0 0; padding-inline: 4px; color: var(--muted); max-width: 70ch; }
+
+/* Cards */
+.card { background: var(--surface); border-radius: 28px; padding: 26px; box-shadow: var(--shadow); min-width: 0; }
+.card-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-bottom: 16px; }
+.card-top h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+.card > h2, .h2 { margin: 0 0 16px; font-size: 1.1rem; font-weight: 700; }
+.kicker { font-size: 13px; color: var(--muted); margin: -10px 0 16px; max-width: 70ch; }
+
+/* Segmented controls */
+.seg { display: inline-flex; gap: 4px; background: var(--track); border-radius: 14px; padding: 4px; }
+.seg button { border: 0; background: transparent; color: var(--muted); padding: 7px 14px; border-radius: 11px; cursor: pointer; font-size: 13px; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 2px 6px rgba(31,43,59,.08); }
+.seg button.up[aria-pressed="true"] { background: var(--up); color: #fff; }
+.seg button.down[aria-pressed="true"] { background: var(--down); color: #fff; }
+
+/* Summary row */
+.stats { display: grid; grid-template-columns: 1.1fr 1fr 1fr; padding: 28px 0; }
+.stats > div { padding: 0 28px; min-width: 0; }
+.stats > div + div { border-inline-start: 1px solid var(--line); }
+@media (max-width: 1100px) {
+  .stats { grid-template-columns: 1fr; gap: 26px; }
+  .stats > div + div { border-inline-start: 0; border-top: 1px solid var(--line); padding-top: 26px; }
+}
+.big { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+.big b { font-family: var(--font-num); font-size: 40px; line-height: 1; font-weight: 800; }
+.big span { color: var(--muted); font-size: 17px; }
+.donut-row { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.donut { width: 150px; height: 150px; flex: none; }
+.dlegend { display: grid; gap: 10px; flex: 1; min-width: 160px; }
+.dlegend div { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+.dlegend i { width: 20px; height: 5px; border-radius: 3px; flex: none; }
+.dlegend b { margin-inline-start: auto; color: var(--ink); font-family: var(--font-num); font-size: 18px; }
+.bars-row { display: flex; align-items: flex-end; gap: 16px; margin-top: 22px; flex-wrap: wrap; }
+.bars { display: flex; align-items: flex-end; gap: 6px; height: 92px; direction: ltr; }
+.bars span { width: 18px; border-radius: 5px; background: var(--blue); }
+.bars span.c { background: var(--accent); opacity: .75; }
+.bars span.e { background: var(--teal); }
+.bars span.m { background: var(--track); }
+.bars-meta { display: grid; gap: 0; color: var(--muted); font-size: 13px; }
+.bars-meta b { font-family: var(--font-num); font-size: 22px; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+.bars-meta b svg { width: 20px; height: 20px; color: var(--muted); }
+.core { display: grid; gap: 18px; }
+.core-row { display: flex; align-items: center; gap: 14px; }
+.core-row i { width: 18px; height: 18px; border-radius: 5px; flex: none; }
+.core-row .n { font-weight: 600; }
+.core-row .s { color: var(--muted); font-size: 13px; }
+.core-row .v { margin-inline-start: auto; text-align: end; font-size: 14px; white-space: nowrap; }
+.core-row .v small { display: block; color: var(--muted); font-size: 12px; }
+.tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 14px; padding: 7px 14px;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); font-weight: 600; font-size: 14px; direction: ltr;
+}
+.tag::before { content: "#"; color: var(--muted); font-weight: 400; }
+.tag.up { color: var(--up); }
+.tag.down { color: var(--down); }
+.dashed-btn {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 18px; padding: 12px 20px; border-radius: 16px;
+  border: 1.5px dashed var(--dash); background: transparent; color: var(--muted); font-weight: 700; font-size: 13px; letter-spacing: .03em; cursor: pointer;
+}
+.dashed-btn svg { width: 20px; height: 20px; }
+
+/* Live price cards */
+.live-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; margin-bottom: 18px; }
+.live-head .h2 { margin: 0; }
+.live-meta { font-size: 13px; color: var(--muted); }
+.stale { margin: 0 0 16px; padding: 10px 14px; border-radius: 14px; background: var(--warn-soft); color: var(--warn); font-size: 14px; }
+.live-label { display: none; }
+.live-stage { display: none; }
+.period { display: none; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media (max-width: 1100px) { .cards { grid-template-columns: 1fr; } }
+.acard { border: 1px solid var(--line); border-radius: 26px; padding: 22px; display: grid; gap: 14px; min-width: 0; }
+.acard-head { display: flex; align-items: center; gap: 14px; }
+.tile { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; flex: none; }
+.tile svg { width: 22px; height: 22px; }
+.tile.bonds { background: rgba(125, 157, 198, 0.16); color: var(--blue); }
+.tile.stocks { background: var(--up-soft); color: var(--teal); }
+.tile.commodities { background: var(--warn-soft); color: var(--amber); }
+.acard-head .t { font-weight: 700; display: block; }
+.acard-head .s { color: var(--muted); font-size: 13px; }
+.chiprow { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 12px; white-space: nowrap; background: var(--tint); }
+.pill.up { background: var(--up-soft); color: var(--up); }
+.pill.down { background: var(--down-soft); color: var(--down); }
+.dbox { border: 1.5px dashed var(--dash); border-radius: 18px; padding: 14px 16px; display: grid; gap: 8px; }
+.nums { display: flex; gap: 4px 16px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.nums b { color: var(--ink); font-weight: 600; direction: ltr; unicode-bidi: isolate; }
+svg.spark { width: 100%; height: 72px; display: block; direction: ltr; }
+.spark-key { font-size: 12px; color: var(--muted); display: flex; gap: 14px; }
+.spark-key span::before { content: ""; display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--ink); vertical-align: middle; margin-inline-end: 6px; }
+.spark-key span.ma::before { border-top: 2px dashed var(--muted); }
+
+/* Cycle chart */
+.chart-box { overflow-x: auto; max-width: 900px; margin-inline: auto; }
+svg.cycle { display: block; width: 100%; min-width: 620px; height: auto; direction: ltr; }
+svg .col { outline: none; }
+svg .col:focus-visible rect.hit { stroke: var(--accent); stroke-width: 2; }
+.cycle-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 12.5px; color: var(--muted); margin-top: 10px; min-width: 620px; }
+.cycle-legend i { display: inline-block; vertical-align: -2px; margin-inline-end: 7px; }
+.lg-pill { width: 26px; height: 14px; border-radius: 7px; background: var(--accent); }
+.lg-cell { width: 22px; height: 14px; border-radius: 5px; background: var(--up-soft); border: 1.5px solid var(--up); }
+.lg-mixed { color: var(--warn); font-weight: 600; }
+svg .col { cursor: pointer; }
+svg .col rect.hit { fill: transparent; transition: fill .2s; }
+svg .col:hover rect.hit { fill: var(--tint); }
+svg .col.sel rect.hit { fill: var(--sel); stroke: var(--pick); stroke-width: 1.5; }
+svg .col.live rect.hit { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 5 4; }
+svg .col.live.sel rect.hit { stroke-dasharray: none; }
+.lg-now { width: 16px; height: 14px; border-radius: 5px; background: var(--accent-soft); border: 1.5px solid var(--accent); }
+.lg-pick { width: 16px; height: 14px; border-radius: 5px; background: var(--sel); border: 1.5px solid var(--pick); }
+.stage-head .tile.pick { background: var(--sel); color: var(--pick); }
+
+/* Stage detail + checker */
+.grid2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: start; }
+@media (max-width: 1100px) { .grid2 { grid-template-columns: 1fr; } }
+.stage-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.stage-head .tile { background: var(--accent-soft); color: var(--accent); font-family: var(--font-num); font-weight: 800; font-size: 20px; }
+.stage-num { display: block; font-size: 13px; color: var(--muted); }
+.stage-head h3 { margin: 0; font-size: 1.25rem; line-height: 1.3; }
+.stage-desc { margin: 0 0 16px; max-width: 65ch; }
+.assets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.asset { border-radius: 16px; padding: 12px 14px; display: grid; gap: 2px; }
+.asset.up { background: var(--up-soft); color: var(--up); }
+.asset.down { background: var(--down-soft); color: var(--down); }
+.asset .name { font-size: 13px; color: var(--ink); }
+.asset .dir { font-weight: 700; }
+.macro { margin: 16px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; font-size: 14px; color: var(--muted); }
+.macro li { background: var(--tint); border-radius: 12px; padding: 6px 12px; }
+.macro b { color: var(--ink); font-weight: 600; }
+.rec { margin-top: 18px; display: grid; gap: 12px; border: 1.5px dashed var(--dash); border-radius: 20px; padding: 18px; }
+.rec h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+body.fa .rec h4 { letter-spacing: 0; font-size: 13px; }
+.rec p { margin: 0; max-width: 65ch; }
+.rec p.strat { font-weight: 700; font-size: 17px; line-height: 1.4; }
+.plan { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .plan { grid-template-columns: 1fr; } }
+.plan-col { border-radius: 16px; padding: 14px 16px; }
+.plan-col.add { background: var(--up-soft); }
+.plan-col.cut { background: var(--down-soft); }
+.plan-col.add h4 { color: var(--up); }
+.plan-col.cut h4 { color: var(--down); }
+.plan ul, .prep ol { margin: 8px 0 0; padding-inline-start: 20px; display: grid; gap: 6px; font-size: 14px; }
+.prep { background: var(--tint); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
+.prep ol { margin: 0; }
+.signal { display: flex; gap: 10px; align-items: flex-start; border-top: 1px solid var(--line); padding-top: 12px; font-size: 14px; }
+.signal svg { width: 20px; height: 20px; flex: none; color: var(--accent); margin-top: 2px; }
+.signal b { display: block; }
+.signal span { display: block; }
+.signal .now { margin-top: 4px; font-weight: 600; color: var(--accent); }
+.tilt { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 560px) { .tilt { grid-template-columns: repeat(2, 1fr); } }
+.tilt div { background: var(--tint); border-radius: 14px; padding: 8px 12px; font-size: 13px; display: grid; }
+.tilt .lv { font-weight: 700; }
+.tilt .ow .lv { color: var(--up); }
+.tilt .uw .lv { color: var(--down); }
+.tilt .n .lv { color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; gap: 4px; font-family: var(--font-num); font-weight: 600; font-size: 13px; padding: 5px 12px; border-radius: 12px; background: var(--tint); direction: ltr; }
+.chip::before { content: "#"; color: var(--muted); font-weight: 400; }
+.chip.up { background: var(--up-soft); color: var(--up); }
+.chip.down { background: var(--down-soft); color: var(--down); }
+.hint { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+
+.checker .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; font-weight: 600; }
+.checker .row:last-of-type { border-bottom: 0; }
+.result { margin-top: 14px; padding: 16px; border-radius: 18px; border: 1.5px dashed var(--dash); }
+.result p { margin: 0 0 10px; }
+.result .go { display: flex; gap: 8px; flex-wrap: wrap; }
+.result .go button { font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 12px; border: 0; background: var(--accent-soft); color: var(--accent); cursor: pointer; }
+
+/* Asset table */
+.watch-tools { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin: -6px 0 16px; }
+.watch-tools p { margin: 0; font-size: 13px; color: var(--muted); max-width: 70ch; }
+.watch-tools label { font-size: 13px; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; background: var(--track); padding: 8px 14px; border-radius: 12px; }
+.table-box { overflow-x: auto; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 520px; font-size: 14px; direction: ltr; }
+th, td { padding: 11px 12px; text-align: center; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 13px; }
+table.watch { direction: inherit; min-width: 840px; }
+table.watch th, table.watch td { text-align: start; }
+table.watch tr.group td { font-weight: 700; color: var(--muted); font-size: 12px; padding: 16px 12px 6px; border-bottom: 0; letter-spacing: .04em; text-transform: uppercase; }
+body.fa table.watch tr.group td { letter-spacing: 0; font-size: 13px; }
+table.watch tr.fit td { background: var(--sel); }
+table.watch tr.fit td:first-child { border-start-start-radius: 12px; border-end-start-radius: 12px; }
+table.watch tr.fit td:last-child { border-start-end-radius: 12px; border-end-end-radius: 12px; }
+table.watch .sym { font-size: 12px; color: var(--muted); }
+table.watch td.num { direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+body.fa table.watch td.num { text-align: right; }
+.pos { color: var(--up); }
+.neg { color: var(--down); }
+.st { display: inline-flex; gap: 3px; direction: ltr; }
+.st span { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; background: var(--tint); color: var(--muted); }
+.st span.on { background: var(--pick); color: var(--surface); }
+.st span.cur { outline: 2px solid var(--accent); outline-offset: 1px; }
+.fitlbl { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.fitlbl.good { color: var(--up); }
+.fitlbl.warn { color: var(--warn); }
+.fitlbl.muted { color: var(--muted); font-weight: 400; }
+
+/* History + matrix */
+.hist-box { overflow-x: auto; }
+.hist { display: grid; grid-template-columns: 3.5em repeat(12, minmax(30px, 1fr)); gap: 5px; direction: ltr; min-width: 480px; font-size: 12px; }
+.hist .yr { color: var(--muted); align-self: center; font-family: var(--font-num); font-weight: 600; }
+.hist .mh { color: var(--muted); text-align: center; font-family: var(--font-num); }
+.cell { height: 32px; border-radius: 9px; display: grid; place-items: center; font-family: var(--font-num); font-weight: 700; border: 0; cursor: pointer; padding: 0; font-size: 12px; }
+.cell.c { background: var(--warm-soft); color: var(--half-c-ink); }
+.cell.e { background: var(--cool-soft); color: var(--half-e-ink); }
+.cell.m { background: transparent; border: 1.5px dashed var(--dash); color: var(--muted); cursor: default; }
+.cell.empty { background: transparent; cursor: default; }
+.cell.now { outline: 2px solid var(--accent); outline-offset: 1px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin-top: 14px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; vertical-align: -1px; margin-inline-end: 6px; }
+td.asset-name { font-weight: 600; text-align: left; }
+body.fa td.asset-name { text-align: right; }
+td.u { color: var(--up); font-weight: 700; }
+td.d { color: var(--down); font-weight: 700; }
+td.on, th.on { background: var(--sel); }
+.note { font-size: 13px; color: var(--muted); margin: 0; max-width: 85ch; }
+section[id] { scroll-margin-top: 20px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+
+/* ---- Theme: cards, gradient tiles, tabs, pills ---- */
+.card { border-radius: 20px; }
+.card > h2, .h2, .card-top h2 { font-weight: 800; }
+.stats > div + div { border-color: var(--line); }
+
+/* Period switch as text tabs with an orange underline */
+.seg.period-seg { background: transparent; padding: 0; gap: 2px; }
+.seg.period-seg button { background: transparent; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 6px 10px; border-radius: 8px; }
+body.fa .seg.period-seg button { letter-spacing: 0; }
+.seg.period-seg button:hover { color: var(--ink); }
+.seg.period-seg button[aria-pressed="true"] { background: transparent; box-shadow: none; color: var(--accent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+
+/* Segmented controls elsewhere */
+.seg { background: var(--track); }
+.seg button.up[aria-pressed="true"] { background: var(--g-up); }
+.seg button.down[aria-pressed="true"] { background: var(--g-down); }
+
+/* Summary: ring donut with orange centre, purple/orange bars */
+.donut { width: 160px; height: 160px; }
+.bars span { border-radius: 6px; }
+.bars span.c { background: var(--accent); opacity: 1; }
+.bars span.e { background: var(--blue); }
+.core-row i { border-radius: 50%; width: 14px; height: 14px; }
+.tag { border-radius: 10px; box-shadow: none; background: var(--tint); border-color: transparent; }
+.dashed-btn { border-radius: 12px; }
+
+/* Live prices: gradient tiles */
+.cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .cards { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+.acard { border: 0; border-radius: 18px; color: #fff; padding: 20px; }
+.acard.bonds { background: var(--g-purple); box-shadow: 0 12px 26px rgba(90, 59, 239, 0.25); }
+.acard.stocks { background: var(--g-blue); box-shadow: 0 12px 26px rgba(43, 98, 238, 0.25); }
+.acard.commodities { background: var(--g-teal); box-shadow: 0 12px 26px rgba(25, 168, 173, 0.25); }
+.acard.stage { background: var(--g-orange); box-shadow: 0 12px 26px rgba(255, 124, 76, 0.28); }
+.acard .tile { background: rgba(255, 255, 255, 0.2); color: #fff; }
+.acard-head .t { color: #fff; }
+.acard-head .s { color: rgba(255, 255, 255, 0.8); }
+.acard .pill, .acard .pill.up, .acard .pill.down { background: rgba(255, 255, 255, 0.2); color: #fff; }
+.acard .dbox { border-color: rgba(255, 255, 255, 0.4); }
+.acard .nums, .acard .spark-key { color: rgba(255, 255, 255, 0.82); }
+.acard .nums b { color: #fff; }
+.acard .spark-key span::before { border-top-color: #fff; }
+.acard .spark-key span.ma::before { border-top-color: rgba(255, 255, 255, 0.75); }
+.acard svg.spark .area { fill: rgba(255, 255, 255, 0.16); }
+.acard svg.spark .maline { stroke: rgba(255, 255, 255, 0.75); }
+.acard svg.spark .pline { stroke: #fff; }
+.stage-big { display: flex; align-items: baseline; gap: 10px; }
+.stage-big b { font-family: var(--font-num); font-size: 52px; line-height: 1; font-weight: 800; }
+.stage-big span { font-size: 17px; font-weight: 700; }
+.acard.stage p { margin: 0; font-size: 13.5px; color: rgba(255, 255, 255, 0.9); }
+
+/* Status pills: solid gradient */
+.pill.up { background: var(--g-up); color: #fff; }
+.pill.down { background: var(--g-down); color: #fff; }
+table.watch .pill { padding: 5px 14px; border-radius: 8px; }
+
+/* Tables */
+th { color: var(--ink); font-weight: 800; font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase; }
+body.fa th { letter-spacing: 0; font-size: 13px; }
+td { border-bottom-color: var(--line); }
+
+/* Stage detail tile + misc */
+.stage-head .tile { background: var(--accent-soft); color: var(--accent); }
+.result .go button { background: var(--sel); color: var(--pick); }
+.st span.on { background: var(--pick); }
+.st span.cur { outline-color: var(--accent); }
+
+/* Next move */
+.conv { font-size: 12.5px; font-weight: 800; padding: 5px 14px; border-radius: 999px; }
+.conv.high { background: var(--up-soft); color: var(--up); }
+.conv.mid { background: var(--warn-soft); color: var(--warn); }
+.conv.low { background: var(--down-soft); color: var(--down); }
+.next { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1250px) { .next { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .next { grid-template-columns: 1fr; } }
+.nm-box { background: var(--tint); border-radius: 16px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; font-size: 14px; }
+.nm-box h4 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 800; }
+.nm-ic { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: #fff; flex: none; }
+.nm-ic svg { width: 17px; height: 17px; }
+.nm-ic.o { background: var(--g-orange); }
+.nm-ic.p { background: var(--g-purple); }
+.nm-ic.t { background: var(--g-teal); }
+.nm-ic.k { background: var(--pick); color: var(--surface); }
+.nm-box p { margin: 0; }
+.nm-box p.muted { color: var(--muted); font-size: 13px; }
+.nm-box p.strong { font-weight: 800; }
+/* Sector rotation + backtest */
+.rot-box { overflow-x: auto; max-width: 900px; margin-inline: auto; }
+svg.rot { display: block; width: 100%; min-width: 620px; height: auto; direction: ltr; }
+.rot-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+.rot-legend i { display: inline-block; width: 22px; height: 0; border-top: 3px solid; border-radius: 2px; vertical-align: middle; margin-inline-end: 7px; }
+.bt-sub { margin: 30px 0 6px; font-size: 1rem; font-weight: 800; }
+.bt-intro { font-size: 13.5px; color: var(--muted); margin: 0 0 12px; max-width: 85ch; }
+table.heat { border-collapse: separate; border-spacing: 4px; min-width: 780px; }
+table.heat th, table.heat td { border-bottom: 0; padding: 8px 6px; }
+table.heat th small { display: block; font-weight: 500; color: var(--muted); text-transform: none; letter-spacing: 0; font-size: 11px; }
+table.heat th.on { background: var(--sel); border-radius: 8px; }
+table.heat td.lbl { text-align: left; font-weight: 600; white-space: nowrap; }
+body.fa table.heat td.lbl { text-align: right; }
+table.heat td.lbl .sym { font-size: 12px; color: var(--muted); font-weight: 500; }
+table.heat td.hc { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 600; border-radius: 8px; font-size: 13px; cursor: help; direction: ltr; }
+table.heat td.hc.sig { font-weight: 800; }
+table.heat td.hc.small { opacity: .45; }
+table.heat td.hc.claim { box-shadow: inset 0 0 0 2px var(--pick); }
+table.heat td.hc.none { color: var(--muted); }
+.agree { font-weight: 700; white-space: nowrap; }
+.agree.yes { color: var(--up); }
+.agree.near { color: var(--warn); }
+.agree.no { color: var(--down); }
+.verdict { margin: 14px 0 0; padding: 14px 16px; border-radius: 16px; background: var(--tint); font-size: 14px; max-width: 85ch; }
+.bt-note { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; max-width: 85ch; }
+.btchips .chip::before { content: none; }
+
+/* Strategy test */
+table.stab { min-width: 640px; }
+table.stab th, table.stab td { text-align: start; }
+table.stab td.num { direction: ltr; unicode-bidi: isolate; }
+body.fa table.stab td.num { text-align: right; }
+table.stab tr.me td { background: var(--accent-soft); font-weight: 700; }
+table.stab tr.me td:first-child { border-start-start-radius: 12px; border-end-start-radius: 12px; }
+table.stab tr.me td:last-child { border-start-end-radius: 12px; border-end-end-radius: 12px; }
+table.stab .sw { display: inline-block; width: 18px; height: 0; border-top: 3px solid; border-radius: 2px; vertical-align: middle; margin-inline-end: 8px; }
+table.wtab { min-width: 560px; margin-bottom: 8px; }
+table.wtab td { font-family: var(--font-num); font-size: 13px; border-radius: 8px; }
+
+/* Economy */
+.econ-foot { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px 24px; align-items: end; margin-top: 16px; }
+@media (max-width: 900px) { .econ-foot { grid-template-columns: 1fr; } }
+.econ-foot .verdict { margin: 0; }
+.ebars { display: flex; align-items: center; gap: 2px; height: 64px; direction: ltr; margin-top: 6px; }
+.ebars span { flex: 1; min-width: 2px; border-radius: 2px; }
+.vote { font-size: 12.5px; font-weight: 800; padding: 4px 12px; border-radius: 999px; justify-self: start; }
+.vote.p { background: var(--up-soft); color: var(--up); }
+.vote.z { background: var(--warn-soft); color: var(--warn); }
+.vote.n { background: var(--down-soft); color: var(--down); }
+svg.mini { width: 100%; height: 54px; display: block; direction: ltr; }
+.nm-box .val { font-family: var(--font-num); font-size: 22px; font-weight: 800; direction: ltr; unicode-bidi: isolate; }
+
+.nm-box ul { margin: 0; padding-inline-start: 18px; display: grid; gap: 5px; }
+.nm-big { font-size: 19px; font-weight: 800; line-height: 1.3; }
+.nm-label { font-size: 12px; font-weight: 700; color: var(--muted); }
+.meter { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.meter i { display: block; height: 100%; border-radius: 4px; background: var(--g-orange); }
+.next-note { margin: 14px 0 0; font-size: 12.5px; color: var(--muted); }
+
+/* Overview: sentence, month strip, then "what could change the stage" and "what is working" */
+.ltr { direction: ltr; unicode-bidi: isolate; }
+.ov-story { margin: 0; font-size: 22px; line-height: 1.55; font-weight: 700; max-width: 62ch; }
+body.fa .ov-story { line-height: 1.8; }
+.ov-story em { font-style: normal; padding: 1px 7px; border-radius: 7px; white-space: nowrap; }
+.ov-story em.acc { background: var(--accent-soft); color: #b86400; }
+.ov-story em.up { background: var(--up-soft); color: var(--up); }
+.ov-story em.down { background: var(--down-soft); color: var(--down); }
+.ov-months { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; margin-top: 18px; direction: ltr; }
+.ov-months div { border-radius: 10px; padding: 7px 0; text-align: center; font-size: 12px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.ov-months b { display: block; font-size: 16px; font-family: var(--font-num); }
+.ov-months .c { background: var(--warm-soft); color: var(--half-c-ink); }
+.ov-months .e { background: var(--cool-soft); color: var(--half-e-ink); }
+.ov-months .m { background: var(--tint); color: var(--muted); }
+.ov-months .now { box-shadow: inset 0 0 0 2px var(--accent); }
+.ov-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 22px; border-top: 1px solid var(--line); padding-top: 22px; }
+.ov-grid > div { min-width: 0; }
+.ov-grid > div:first-child { padding-inline-end: 24px; }
+.ov-grid > div + div { border-inline-start: 1px solid var(--line); padding-inline-start: 24px; }
+.ov-lbl { font-size: 12.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+body.fa .ov-lbl { letter-spacing: 0; font-size: 13.5px; }
+.ov-row { display: grid; gap: 6px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.ov-row:last-child { border-bottom: 0; }
+.ov-row .t { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ov-row .t b { font-weight: 700; }
+.ov-row .t .sym { color: var(--muted); font-weight: 600; }
+.ov-row .v { font-weight: 700; direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+.ov-row .note { font-size: 13px; color: var(--muted); }
+.cbar { position: relative; height: 10px; border-radius: 5px; background: var(--track); direction: ltr; }
+.cbar .zero { position: absolute; left: 50%; top: -4px; bottom: -4px; width: 2px; background: var(--ink); opacity: .3; }
+.cbar .fill { position: absolute; top: 0; bottom: 0; border-radius: 5px; }
+.ov-sub { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 14px 0 4px; font-size: 13.5px; font-weight: 800; }
+.ov-sub span + span { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+.ov-rank { display: grid; grid-template-columns: 52px minmax(0, 1fr) 64px; gap: 10px; align-items: center; padding: 5px 0; font-size: 14px; }
+.ov-rank b { font-weight: 800; font-family: var(--font-num); direction: ltr; }
+.ov-rank .v { text-align: end; font-weight: 700; direction: ltr; unicode-bidi: isolate; }
+.ov-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+.ov-legend i { display: inline-block; width: 14px; height: 8px; border-radius: 4px; margin-inline-end: 5px; }
+.ov .dashed-btn { margin-top: 16px; }
+@media (max-width: 960px) {
+  .ov-grid { grid-template-columns: 1fr; gap: 22px; }
+  .ov-grid > div:first-child { padding-inline-end: 0; }
+  .ov-grid > div + div { border-inline-start: 0; padding-inline-start: 0; border-top: 1px solid var(--line); padding-top: 22px; }
+}
+@media (max-width: 560px) {
+  .ov-story { font-size: 18px; }
+  .ov-months { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+/* Today card */
+.today .ov-story { margin-top: 2px; }
+.today-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 12px; }
+.today-meta span { background: var(--tint); border-radius: 10px; padding: 5px 12px; font-size: 13.5px; color: var(--ink); }
+.today-meta span.warn { background: var(--warn-soft); color: var(--warn); font-weight: 700; }
+.today-plan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+@media (max-width: 760px) { .today-plan { grid-template-columns: 1fr; } }
+.today .ov-grid { margin-top: 20px; }
+/* Sidebar "Research" label and the group heading in the page */
+.nav-sep { display: block; margin: 14px 30px 4px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--side-muted); }
+body.fa .nav-sep { letter-spacing: 0; font-size: 12.5px; }
+@media (max-width: 960px) { .nav-sep { margin: 0 6px; padding: 8px 0 0; border: 0; align-self: center; } }
+.group-title { margin-top: 18px; padding: 18px 4px 0; border-top: 2px dashed var(--dash); }
+.group-title h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
+.group-title p { margin: 4px 0 0; color: var(--muted); }
+
+/* What happens next */
+.stage-pick { display: inline-flex; gap: 4px; direction: ltr; }
+.stage-pick button { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--tint); color: var(--muted); font-weight: 800; cursor: pointer; font-family: var(--font-num); }
+.stage-pick button.live { box-shadow: inset 0 0 0 2px var(--accent); color: var(--ink); }
+.stage-pick button[aria-pressed="true"] { background: var(--pick); color: var(--surface); }
+.after-warn { margin: -4px 0 14px; padding: 10px 14px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 14px; font-weight: 600; }
+.after-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; }
+@media (max-width: 960px) { .after-grid { grid-template-columns: 1fr; } }
+.after-table { display: grid; grid-template-columns: minmax(90px, 1.1fr) repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; align-items: stretch; }
+.after-table .hd { font-size: 12.5px; font-weight: 700; color: var(--muted); padding: 0 4px; }
+.after-table .nm { font-weight: 700; font-size: 14px; align-self: center; }
+.after-table .acell { background: var(--tint); border-radius: 12px; padding: 8px 10px; display: grid; gap: 1px; min-width: 0; }
+.after-table .acell b { font-size: 17px; font-weight: 800; }
+.after-table .acell small { font-size: 11.5px; color: var(--muted); }
+.after-table .acell small.base { font-size: 11px; }
+.after-table .acell.none { color: var(--muted); font-size: 12px; align-content: center; }
+.after-table .acell.faded b { opacity: .6; }
+@media (max-width: 480px) { .after-table { grid-template-columns: 1fr 1fr 1fr; } .after-table .hd:first-child { display: none; } .after-table .nm { grid-column: 1 / -1; margin-top: 6px; } }
+.after-facts { display: grid; gap: 14px; align-content: start; }
+.after-box { background: var(--tint); border-radius: 16px; padding: 14px 16px; display: grid; gap: 8px; }
+.after-box h4 { margin: 0; font-size: 14.5px; font-weight: 800; }
+.after-box p { margin: 0; font-size: 14px; }
+.after-box .meter i { background: var(--accent); }
+.nx-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 46px; gap: 10px; align-items: center; font-size: 14px; }
+.nx-row b { text-align: end; }
+.nx-bar { height: 10px; border-radius: 5px; background: var(--surface); overflow: hidden; }
+.nx-bar i { display: block; height: 100%; background: var(--pick); border-radius: 5px; }
+</style>
+</head>
+<body class="fa">
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3-4.5 5-3"/><circle cx="17" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg></span>
+      <span id="t-brand"></span>
+    </div>
+    <div class="who">
+      <div class="badge" id="side-badge"></div>
+      <span class="nm" id="side-name"></span>
+      <span class="sm" id="side-sub"></span>
+    </div>
+    <nav id="nav"></nav>
+    <div class="side-foot" role="group" aria-label="Language">
+      <button id="lang-fa" type="button">فا</button>
+      <button id="lang-en" type="button">EN</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="pillbox">
+        <span id="t-period"></span>
+        <div class="seg period-seg" role="group" data-where="top"></div>
+        <span id="t-rule"></span>
+        <div class="seg period-seg" role="group" id="rule-seg"></div>
+      </div>
+      <button class="cta" type="button" id="cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 18h16M7 14l4-4 3 3 5-6"/></svg>
+        <span id="cta-label"></span>
+        <span class="count num" id="cta-count"></span>
+      </button>
+    </div>
+
+    <div class="head">
+      <h1 id="t-title"></h1>
+      <span class="date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span id="head-date" class="num"></span></span>
+    </div>
+    <p class="sub" id="t-sub"></p>
+
+    <section class="card today" id="today">
+      <div class="card-top">
+        <h2 id="t-today"></h2>
+        <span class="conv" id="next-conv"></span>
+      </div>
+      <p class="ov-story" id="ov-story"></p>
+      <div class="today-meta" id="today-meta"></div>
+      <div class="ov-months" id="ov-months"></div>
+      <div class="today-plan" id="next-grid"></div>
+      <div class="ov-grid">
+        <div>
+          <div class="ov-lbl" id="ov-core-l"></div>
+          <div id="ov-core"></div>
+        </div>
+        <div>
+          <div class="ov-lbl" id="ov-fit-l"></div>
+          <div id="ov-fit"></div>
+          <div class="ov-legend" id="ov-legend"></div>
+          <button class="dashed-btn" type="button" id="fit-all">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M12 8v8M8 12h8"/></svg>
+            <span id="fit-all-l"></span>
+          </button>
+        </div>
+      </div>
+      <p class="next-note" id="next-note"></p>
+    </section>
+
+    <section class="card" id="after-sec">
+      <div class="card-top">
+        <h2 id="t-after"></h2>
+        <div class="stage-pick" role="group" id="after-pick"></div>
+      </div>
+      <p class="kicker" id="t-after-sub"></p>
+      <p class="after-warn" id="after-warn" hidden></p>
+      <div class="after-grid">
+        <div>
+          <div class="ov-lbl" id="t-after-ret"></div>
+          <div class="after-table" id="after-ret"></div>
+        </div>
+        <div class="after-facts" id="after-facts"></div>
+      </div>
+      <p class="bt-note" id="after-note"></p>
+    </section>
+
+    <section class="card" id="live">
+      <p class="stale" id="stale" hidden></p>
+      <div class="live-head">
+        <h2 class="h2" id="t-live"></h2>
+        <span class="live-meta" id="live-meta"></span>
+      </div>
+      <span class="live-stage" id="live-stage"></span>
+      <span id="t-period-hint" hidden></span>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <div class="grid2" id="stage-sec">
+      <section class="card" aria-live="polite">
+        <div class="stage-head"><div class="tile" id="d-tile"></div><div><span class="stage-num" id="d-num"></span><h3 id="d-name"></h3></div></div>
+        <p class="stage-desc" id="d-desc"></p>
+        <div class="assets" id="d-assets"></div>
+        <ul class="macro" id="d-macro"></ul>
+        <div class="rec" id="d-rec"></div>
+      </section>
+
+      <section class="card checker">
+        <h2 id="t-check"></h2>
+        <p class="hint" id="t-hint"></p>
+        <div id="check-rows"></div>
+        <div class="result" id="result"></div>
+      </section>
+    </div>
+
+    <section class="card" id="cycle-sec">
+      <div class="card-top">
+        <h2 id="t-cycle"></h2>
+        <div class="seg period-seg" role="group" data-where="chart"></div>
+      </div>
+      <div class="chart-box">
+        <svg class="cycle" id="cycle" viewBox="0 0 820 392" role="img" aria-labelledby="t-title"></svg>
+        <div class="cycle-legend" id="cycle-legend"></div>
+      </div>
+    </section>
+
+    <section class="card" id="watch-sec">
+      <h2 id="t-watch"></h2>
+      <div class="watch-tools">
+        <p id="t-watch-hint"></p>
+        <label><input type="checkbox" id="watch-only"> <span id="t-watch-only"></span></label>
+      </div>
+      <div class="table-box"><table class="watch" id="watch"></table></div>
+    </section>
+
+    <section class="card" id="econ-sec">
+      <div class="card-top">
+        <h2 id="t-econ"></h2>
+        <span class="conv" id="econ-score"></span>
+      </div>
+      <p class="kicker" id="t-econ-kicker"></p>
+      <div class="next" id="econ-grid"></div>
+      <div class="econ-foot">
+        <p class="verdict" id="econ-verdict"></p>
+        <div>
+          <span class="nm-label" id="t-econ-hist"></span>
+          <div class="ebars" id="econ-bars"></div>
+        </div>
+      </div>
+      <p class="bt-note" id="econ-note"></p>
+    </section>
+
+    <section class="card" id="hist-sec">
+      <h2 id="t-hist"></h2>
+      <div class="hist-box"><div class="hist" id="hist"></div></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="group-title" id="research">
+      <h2 id="t-research"></h2>
+      <p id="t-research-sub"></p>
+    </div>
+
+    <section class="card" id="bt-sec">
+      <div class="card-top">
+        <h2 id="t-bt"></h2>
+        <div class="seg" role="group" id="bt-mode"></div>
+      </div>
+      <p class="kicker" id="t-bt-kicker"></p>
+      <div class="rot-box">
+        <svg class="rot" id="rot" viewBox="0 0 820 400" role="img" aria-labelledby="t-bt"></svg>
+        <div class="rot-legend" id="rot-legend"></div>
+      </div>
+      <h3 class="bt-sub" id="t-bt-sec"></h3>
+      <p class="bt-intro" id="bt-intro"></p>
+      <div class="table-box"><table class="heat" id="heat-sec"></table></div>
+      <p class="hint" id="t-heat-hint"></p>
+      <p class="verdict" id="bt-verdict"></p>
+      <h3 class="bt-sub" id="t-bt-cls"></h3>
+      <div class="table-box"><table class="heat" id="heat-cls"></table></div>
+      <p class="hint" id="t-cls-hint"></p>
+      <p class="bt-note" id="bt-note"></p>
+    </section>
+
+    <section class="card" id="strat-sec">
+      <div class="card-top">
+        <h2 id="t-strat"></h2>
+        <span class="conv" id="strat-tag"></span>
+      </div>
+      <p class="kicker" id="t-strat-kicker"></p>
+      <div class="table-box"><table class="heat wtab" id="strat-weights"></table></div>
+      <div class="rot-box">
+        <svg class="rot" id="equity" viewBox="0 0 820 330" role="img" aria-labelledby="t-strat"></svg>
+        <div class="rot-legend" id="equity-legend"></div>
+      </div>
+      <p class="verdict" id="strat-verdict"></p>
+      <h3 class="bt-sub" id="t-strat-stats"></h3>
+      <div class="table-box"><table class="stab" id="strat-stats"></table></div>
+      <h3 class="bt-sub" id="t-strat-halves"></h3>
+      <p class="bt-intro" id="t-strat-halves-hint"></p>
+      <div class="table-box"><table class="stab" id="strat-halves"></table></div>
+      <h3 class="bt-sub" id="t-strat-rules"></h3>
+      <p class="bt-intro" id="t-strat-rules-hint"></p>
+      <div class="table-box"><table class="stab" id="strat-rules"></table></div>
+      <p class="bt-note" id="strat-note"></p>
+    </section>
+
+    <section class="card" id="matrix-sec">
+      <h2 id="t-matrix"></h2>
+      <div class="table-box"><table id="matrix"></table></div>
+    </section>
+
+    <p class="note" id="t-note"></p>
+  </main>
+</div>
+
+<script>
+const ALL = /*__DATA__*/null;
+const PERIOD_KEYS = ["3", "6", "12", "18"];
+const WATCH = (ALL && ALL.watch) || [];
+// Allocation tilt per stage: ow = overweight, n = neutral, uw = underweight
+const TILT = [
+  { cash: "n",  bonds: "ow", stocks: "uw", commodities: "uw" },
+  { cash: "uw", bonds: "ow", stocks: "ow", commodities: "uw" },
+  { cash: "uw", bonds: "n",  stocks: "ow", commodities: "ow" },
+  { cash: "uw", bonds: "uw", stocks: "ow", commodities: "ow" },
+  { cash: "ow", bonds: "uw", stocks: "uw", commodities: "ow" },
+  { cash: "ow", bonds: "n",  stocks: "uw", commodities: "uw" },
+];
+let period = ALL ? ALL.default : "12";
+try { const p = localStorage.getItem("cycle-period"); if (ALL && ALL.periods[p]) period = p; } catch (e) {}
+// Confirmation rule: raw crossing, 2% band, or hold for about a month
+const RULE_KEYS = ["raw", "band", "hold"];
+let rule = "band";   // recommended: best risk-adjusted result in the backtest, fewer false flips
+try { const r = localStorage.getItem("cycle-rule2"); if (RULE_KEYS.includes(r)) rule = r; } catch (e) {}
+const PK = (p, r = rule) => (r === "raw" ? String(p) : `${p}:${r}`);
+const pd = (p) => (ALL && (ALL.periods[PK(p)] || ALL.periods[p])) || null;
+const wp = (w) => w.periods[PK(period)] || w.periods[period];
+let DATA = null, liveStageIdx = null;
+function loadPeriod() {
+  DATA = ALL ? Object.assign({ asOf: ALL.asOf, generated: ALL.generated, stale: ALL.stale }, pd(period)) : null;
+  liveStageIdx = DATA && DATA.stage ? DATA.stage - 1 : null;
+}
+loadPeriod();
+const ASSETS = ["bonds", "stocks", "commodities"];
+const STAGES = [
+  { bonds: 1,  stocks: -1, commodities: -1 },
+  { bonds: 1,  stocks: 1,  commodities: -1 },
+  { bonds: 1,  stocks: 1,  commodities: 1 },
+  { bonds: -1, stocks: 1,  commodities: 1 },
+  { bonds: -1, stocks: -1, commodities: 1 },
+  { bonds: -1, stocks: -1, commodities: -1 },
+];
+
+const T = {
+  fa: {
+    dir: "rtl",
+    title: "چرخه اقتصادی شش‌مرحله‌ای",
+    sub: "مرحله فعلی از روی قیمت واقعی اوراق قرضه، سهام و کالاها تخمین زده می‌شود. روی هر مرحله بزنید تا جزئیاتش را ببینید.",
+    assets: { bonds: "اوراق قرضه", stocks: "سهام", commodities: "کالاها" },
+    stage: "مرحله",
+    expansion: "رونق", contraction: "رکود",
+    rising: "صعودی", falling: "نزولی",
+    now: "اکنون",
+    names: ["ابتدای رکود", "کف رکود", "آغاز بهبود", "رونق", "اواخر رونق", "آغاز افت"],
+    desc: [
+      "اقتصاد وارد رکود شده و بانک مرکزی نرخ بهره را پایین می‌آورد. با افت بازده، قیمت اوراق قرضه بالا می‌رود. سود شرکت‌ها و تقاضا ضعیف است، پس سهام و کالاها هنوز نزولی‌اند.",
+      "اقتصاد نزدیک کف رکود است. پول ارزان و نقدینگی، بازار سهام را پیش از بهبود واقعی بالا می‌برد. تقاضا برای کالاها هنوز ضعیف است.",
+      "بهبود اقتصادی شروع شده و تقاضا برمی‌گردد، پس کالاها هم صعودی می‌شوند. هر سه دارایی هم‌زمان بالا می‌روند.",
+      "رونق جا افتاده. تورم و نرخ بهره بالا می‌روند، اوراق قرضه سقف می‌زنند و نزولی می‌شوند. سهام و کالاها هنوز صعودی‌اند.",
+      "اواخر رونق. نرخ بهره بالا سودآوری را تحت فشار می‌گذارد و سهام سقف می‌زنند. کالاها به خاطر تقاضای قوی و تورم هنوز بالا می‌روند.",
+      "اقتصاد از اوج برمی‌گردد و کالاها هم سقف می‌زنند. هر سه دارایی نزولی‌اند و نگه‌داشتن نقد معمولاً کم‌ریسک‌تر است.",
+    ],
+    macroLabels: ["رشد اقتصادی", "نرخ بهره", "تورم"],
+    macro: [
+      ["در حال کاهش", "در حال کاهش", "در حال کاهش"],
+      ["نزدیک کف", "پایین", "پایین"],
+      ["در حال بهبود", "نزدیک کف", "شروع افزایش"],
+      ["قوی", "در حال افزایش", "در حال افزایش"],
+      ["نزدیک اوج", "بالا", "بالا"],
+      ["در حال کاهش", "نزدیک اوج", "نزدیک اوج"],
+    ],
+    live: "تخمین زنده از بازار",
+    liveStage: (s, n) => `${s}: ${n}`,
+    liveMixed: (list) => `سیگنال‌ها هم‌خوان نیستند. نزدیک‌ترین مرحله‌ها: ${list}`,
+    asOf: (d) => `داده تا ${d}`,
+    built: (d) => `ساخته‌شده ${d}`,
+    stale: "دریافت قیمت ممکن نشد؛ این صفحه آخرین داده ذخیره‌شده را نشان می‌دهد.",
+    price: "قیمت", ma: (m) => `میانگین ${Number(m).toLocaleString("fa-IR")} ماهه`, gap: "فاصله",
+    keyPrice: "قیمت", keyMa: (m) => `میانگین ${Number(m).toLocaleString("fa-IR")} ماهه`,
+    period: "میانگین متحرک:",
+    periodOpt: (m) => `${Number(m).toLocaleString("fa-IR")} ماه`,
+    periodHint: "میانگین کوتاه‌تر زودتر واکنش نشان می‌دهد ولی سیگنال اشتباه بیشتری می‌دهد.",
+    check: "امتحان ترکیب‌های دیگر",
+    hint: "روند هر دارایی را عوض کنید تا ببینید با کدام مرحله می‌خواند. حالت پیش‌فرض، روند فعلی بازار است.",
+    match: (n) => `این ترکیب با ${n} می‌خواند.`,
+    mixed: "این ترکیب در هیچ مرحله‌ای نیست. نزدیک‌ترین مرحله‌ها:",
+    open: (n) => `نمایش ${n}`,
+    reset: "بازگشت به روند فعلی بازار",
+    hist: (m) => `تاریخچه مراحل (پایان هر ماه، میانگین ${Number(m).toLocaleString("fa-IR")} ماهه)`,
+    legC: "مراحل ۱ تا ۳ (سمت رکود)", legE: "مراحل ۴ تا ۶ (سمت رونق)", legM: "سیگنال مختلط", legNow: "ماه جاری",
+    matrix: "جدول مراحل",
+    peak: "اوج", trough: "کف",
+    legNowStage: "مرحله فعلی بازار", legPick: "مرحله انتخاب‌شده شما",
+    periodShort: (m) => `${Number(m).toLocaleString("fa-IR")} ماه`,
+    maLegend: "برچسب‌های روی منحنی: مرحله‌ای که هر میانگین متحرک نشان می‌دهد (میانگین انتخاب‌شده پررنگ است)",
+    turnLegend: "خانه کادردار: دارایی در این مرحله جهتش را عوض می‌کند",
+    mixedNote: (m) => `میانگین ${Number(m).toLocaleString("fa-IR")} ماهه: سیگنال مختلط`,
+    hStrategy: "راهبرد", hFocus: "روی این‌ها تمرکز کنید", hReduce: "این‌ها را کم کنید",
+    hPrepare: (n) => `آماده شدن برای ${n}`, hSignal: "نشانه شروع مرحله بعد",
+    signal: (n, a, up, m) => `${n} وقتی شروع می‌شود که ${a} ${up ? "صعودی" : "نزولی"} شوند؛ یعنی قیمت به ${up ? "بالای" : "زیر"} میانگین ${Number(m).toLocaleString("fa-IR")} ماهه برسد.`,
+    signalNow: (sym, gap, above) => `الان ${sym} ${gap}٪ ${above ? "بالای" : "زیر"} میانگین است.`,
+    plan: [
+      { strategy: "اول دفاع، بعد آماده شدن برای بهبود.",
+        focus: ["اوراق خزانه بلندمدت (TLT، IEF): کاهش نرخ بهره قیمتشان را بالا می‌برد", "طلا (GLD) و خدمات عمومی (XLU) به‌عنوان دارایی دفاعی", "نگه داشتن نقد برای خرید سهام در ادامه"],
+        reduce: ["سهام چرخه‌ای و کالاها که هنوز نزولی‌اند", "نفت و فلزات صنعتی"],
+        prepare: ["فهرستی از سهام باکیفیت و بخش‌های اول چرخه (مالی، کالاهای غیرضروری، شرکت‌های کوچک) آماده کنید", "برنامه بریزید که سهام را پله‌پله بخرید، نه یک‌جا", "از قبل تصمیم بگیرید چه مقدار از نقدتان به سهام می‌رود"] },
+      { strategy: "خرید سهام وقتی خبرها هنوز بد است.",
+        focus: ["سهام، به‌خصوص بخش‌های اول چرخه: مالی (XLF)، کالاهای غیرضروری (XLY)، شرکت‌های کوچک (IWM)، فناوری (QQQ)", "اوراق قرضه را نگه دارید؛ هنوز صعودی‌اند", "طلا اغلب هنوز قوی است"],
+        reduce: ["نقد زیاد؛ بازده آن حالا از سهام و اوراق کمتر است", "کالاها که هنوز برنگشته‌اند"],
+        prepare: ["موقعیت کوچکی در کالاها و فلزات صنعتی (مس، نقره) باز کنید", "بخش‌های صنعتی و مواد اولیه را برای مرحله بعد بررسی کنید", "کم‌کم سررسید اوراق قرضه را کوتاه‌تر کنید"] },
+      { strategy: "کاملاً سرمایه‌گذاری‌شده بمانید؛ هر سه دارایی صعودی‌اند.",
+        focus: ["سهام همچنان دارایی اصلی است، با تمرکز بر فناوری (XLK) و صنعتی (XLI)", "اضافه کردن کالاها: مس (CPER)، نقره (SLV)، سبد کالاها (DBC)", "اوراق ضدتورم (TIP) به‌جای اوراق بلندمدت معمولی"],
+        reduce: ["اوراق بلندمدت؛ بهترین سودشان گذشته است", "بخش‌های دفاعی (خدمات عمومی، کالاهای ضروری) که در دوره بهبود عقب می‌مانند"],
+        prepare: ["پول اوراق را از بلندمدت به کوتاه‌مدت یا ضدتورم ببرید", "سهم انرژی و مواد اولیه را بیشتر کنید", "سطح قیمتی برای فروش اوراق بلندمدت (حد ضرر) تعیین کنید"] },
+      { strategy: "از رشد و تورم سود ببرید؛ از اوراق بلندمدت خارج شوید.",
+        focus: ["سهام چرخه‌ای: صنعتی (XLI)، مواد اولیه (XLB)، انرژی (XLE)", "کالاها و نفت (DBC، USO)", "اوراق کوتاه‌مدت و ضدتورم (SHY، TIP)"],
+        reduce: ["اوراق بلندمدت (TLT) که با بالا رفتن نرخ بهره افت می‌کنند", "سهام حساس به نرخ بهره مثل خدمات عمومی"],
+        prepare: ["بخشی از سود سهامی را که بیشترین رشد را داشته‌اند برداشت کنید", "کم‌کم به سمت بخش‌های دفاعی بروید: کالاهای ضروری (XLP)، سلامت (XLV)", "حد ضرر سهام را نزدیک‌تر کنید"] },
+      { strategy: "سود سهام را حفظ کنید؛ بگذارید کالاها ادامه دهند.",
+        focus: ["انرژی (XLE)، نفت (USO)، سبد کالاها (DBC)", "بخش‌های دفاعی: کالاهای ضروری (XLP)، سلامت (XLV)", "نقد و اوراق خزانه کوتاه‌مدت (SHY) با بازده خوب"],
+        reduce: ["سهام به‌طور کلی، به‌خصوص سهام رشدی و شرکت‌های کوچک", "اوراق بلندمدت، تا وقتی نرخ بهره به اوج برسد"],
+        prepare: ["برای خروج از کالاها برنامه بریزید؛ معمولاً آخر از همه سقف می‌زنند", "سهم نقد را باز هم بیشتر کنید", "نرخ بهره و بازده اوراق بلندمدت را زیر نظر بگیرید؛ اوج آن زمان شروع خرید اوراق بلندمدت است"] },
+      { strategy: "حفظ سرمایه: نقد بهترین دارایی است.",
+        focus: ["نقد و اوراق خزانه کوتاه‌مدت (SHY)", "بخش‌های دفاعی که کمتر افت می‌کنند: کالاهای ضروری، سلامت، خدمات عمومی", "دلار آمریکا (UUP) اغلب قوی می‌شود"],
+        reduce: ["سهام و کالاها که هر دو نزولی‌اند", "اهرم و تمرکز زیاد روی یک دارایی"],
+        prepare: ["با رسیدن نرخ بهره به اوج، اوراق خزانه بلندمدت (TLT، IEF) را پله‌پله بخرید", "طلا اضافه کنید؛ اغلب زودتر برمی‌گردد", "نقد را برای خرید سهام در مرحله ۲ آماده نگه دارید"] },
+    ],
+    nextTitle: "حرکت بعدی",
+    whereT: "کجا هستیم", doT: "الان چه کنیم", watchT: "چه چیزی را زیر نظر بگیریم", reduceT: "کم کنید",
+    agree: (k, n, st) => `${k} از ${n} میانگین متحرک ${st} را نشان می‌دهند.`,
+    others: (list) => `بقیه: ${list}`,
+    conv: { high: "اطمینان بالا", mid: "اطمینان متوسط", low: "اطمینان پایین" },
+    convNote: {
+      high: "همه میانگین‌ها هم‌نظرند؛ تشخیص مرحله قوی است.",
+      mid: "بیشتر میانگین‌ها هم‌نظرند؛ تغییرات را با احتیاط انجام دهید.",
+      low: "میانگین‌ها هم‌نظر نیستند؛ تغییرات را کوچک و پله‌پله انجام دهید.",
+    },
+    actNow: "مناسب این مرحله و صعودی", waitList: "مناسب، ولی هنوز صعودی نیستند (صبر کنید)",
+    gapToGo: (g) => `${g}٪ تا عبور از میانگین؛ هرچه نوار پرتر، مرحله بعد نزدیک‌تر.`,
+    flipped: "این دارایی جهتش را عوض کرده؛ مرحله بعد ممکن است شروع شده باشد.",
+    nextNote: "خلاصه‌ای از الگوهای کلی مدل پرینگ است، نه توصیه سرمایه‌گذاری شخصی.",
+    brand: "چرخه شش‌مرحله‌ای",
+    nav: ["امروز", "بعدش چه می‌شود", "قیمت‌های زنده", "جزئیات مرحله", "نمودار چرخه", "دارایی‌ها", "اقتصاد", "تاریخچه", "چرخش بخش‌ها", "آزمون راهبرد", "جدول مراحل"],
+    afterT: "بعدش چه می‌شود",
+    afterSub: (s, a, b) => `در گذشته، پس از هر پایان ماهی که بازار در ${s} بود، چه اتفاقی افتاد؟ داده ماهانه از ${a} تا ${b}.`,
+    afterRetT: "بازده بعدی (میانگین و درصد دفعات مثبت)",
+    afterCols: ["", "۳ ماه بعد", "۶ ماه بعد", "۱۲ ماه بعد"],
+    afterAssets: { stocks: "سهام (S&P 500)", bonds: "اوراق بلندمدت", commodities: "کالاها", gold: "طلا" },
+    afterPos: (p) => `${p}٪ دفعات مثبت`,
+    afterAll: (v) => `همه ماه‌ها: ${v}`,
+    afterNone: "داده کافی نیست",
+    afterWarn: (m, e) => `نمونه کوچک: این مرحله فقط ${m} ماه در ${e} دوره جداگانه رخ داده است. این اعداد را با احتیاط بخوانید.`,
+    afterDurT: "معمولاً چقدر طول می‌کشد",
+    afterDur: (med, avg, n) => `میانه ${med} ماه، میانگین ${avg} ماه (${n} دوره).`,
+    afterNow: (k) => `الان ${k} ماه است که در این مرحله‌ایم.`,
+    afterNowOther: "این مرحله الان فعال نیست.",
+    afterNextT: "بعد از آن معمولاً کدام مرحله می‌آید",
+    afterNextPring: (s) => `ترتیب کتاب پرینگ: ${s}`,
+    afterNextNone: "هنوز دوره کاملی برای این مرحله ثبت نشده.",
+    afterNote: "بازده از هر پایان ماه داخل مرحله حساب شده، پس دوره‌ها هم‌پوشانی دارند. «همه ماه‌ها» میانگین بلندمدت برای مقایسه است. نتایج گذشته تضمینی برای آینده نیست.",
+    navResearch: "پژوهش", researchT: "پژوهش", researchSub: "این مدل در گذشته چطور عمل کرده است. برای استفاده روزانه لازم نیست.",
+    todayT: "امروز", breadth: (k, n) => `${k} از ${n} دارایی صعودی‌اند.`,
+    ruleLbl: "تأیید سیگنال:",
+    ruleOpt: { raw: "بدون تأیید", band: "باند ۲٪", hold: "ماندن ۱ ماه" },
+    ruleTip: {
+      raw: "هر بار که قیمت از میانگین عبور کند، روند عوض می‌شود.",
+      band: "روند فقط وقتی عوض می‌شود که قیمت بیش از ۲٪ از میانگین عبور کند.",
+      hold: "روند فقط وقتی عوض می‌شود که قیمت حدود یک ماه (در بک‌تست: دو پایان ماه پشت سر هم) آن طرف میانگین بماند.",
+    },
+    econTitle: "بررسی اقتصادی",
+    econKicker: "چهار شاخص اقتصادی آمریکا از FRED (بانک فدرال رزرو سنت‌لوئیس). هر شاخص رأی می‌دهد: رونق (+۱)، نامشخص (۰) یا رکود (−۱). امتیاز مثبت با مراحل ۳ تا ۵ (سمت رونق) و امتیاز منفی با مراحل ۶، ۱ و ۲ (سمت رکود) جور است.",
+    econNames: { curve: "منحنی بازده (۱۰ ساله منهای ۲ ساله)", unemployment: "نرخ بیکاری", credit: "اسپرد اعتباری (Baa منهای ۱۰ ساله)", production: "تولید صنعتی" },
+    econVote: { "1": "رونق", "0": "نامشخص", "-1": "رکود" },
+    econDetail: {
+      curve: (v) => (v < 0 ? "منحنی معکوس است؛ معمولاً پیش از رکود رخ می‌دهد." : v <= 0.25 ? "منحنی تقریباً صاف است؛ نشانه اواخر چرخه." : "منحنی مثبت است؛ وضع عادی دوره رونق."),
+      unemployment: (d) => `میانگین ۳ ماهه ${d} واحد بالاتر از کمترین سطح ۱۲ ماه قبل است (طبق قاعده ساهم، ۰٫۵ یعنی رکود).`,
+      credit: (d, above) => `${d} واحد ${above ? "بالاتر" : "پایین‌تر"} از میانگین ۱۲ ماهه.`,
+      production: (d) => `${d}٪ نسبت به یک سال پیش.`,
+    },
+    econScore: (s) => `امتیاز ${s} از ۴`,
+    econSide: { exp: "سمت رونق (مراحل ۳ تا ۵)", con: "سمت رکود (مراحل ۶، ۱ و ۲)" },
+    econVerdict: (score, side, stage, agree) => agree == null
+      ? `امتیاز اقتصادی ${score} است و جهت روشنی نشان نمی‌دهد.`
+      : agree
+        ? `امتیاز اقتصادی ${score} است، یعنی ${side}. مدل قیمت (${stage}) هم در همین سمت است، پس این دو هم‌خوان‌اند.`
+        : `امتیاز اقتصادی ${score} است، یعنی ${side}. مدل قیمت (${stage}) در سمت دیگر چرخه است، پس این دو هم‌خوان نیستند؛ با احتیاط عمل کنید.`,
+    econHist: "امتیاز اقتصادی در ۵ سال اخیر",
+    econNote: "داده‌های اقتصادی با تأخیر منتشر می‌شوند (بیکاری و تولید ماهانه)؛ تاریخ هر شاخص زیر آن آمده است. قواعد امتیازدهی ساده‌اند و پیش‌بینی قطعی نیستند.",
+    econStale: "دریافت داده اقتصادی ممکن نشد؛ آخرین داده ذخیره‌شده نمایش داده می‌شود.",
+    nextEcon: (score, agree) => agree == null ? `اقتصاد: امتیاز ${score} از ۴، جهت روشن نیست.` : agree ? `اقتصاد: امتیاز ${score} از ۴، با این مرحله هم‌خوان است.` : `اقتصاد: امتیاز ${score} از ۴، با این مرحله هم‌خوان نیست.`,
+    stratTitle: "آزمون راهبرد",
+    stratKicker: (p, r) => `اگر از دهه ۱۹۹۰ هر ماه طبق وزن‌های پرینگ برای مرحله جاری سرمایه‌گذاری می‌کردید چه می‌شد؟ با میانگین ${p} ماهه و قاعده «${r}»، پس از کسر ۰٫۱٪ هزینه معامله. در ماه‌های سیگنال مختلط، ترکیب قبلی حفظ می‌شود.`,
+    stratNames: { pring: "راهبرد شش‌مرحله‌ای", trend: "روند ساده (سهام یا نقد)", spy: "خرید و نگهداری S&P 500", sixty: "۶۰٪ سهام / ۴۰٪ اوراق", equal: "وزن برابر (۴ دارایی)" },
+    wStage: "مرحله",
+    statCols: ["راهبرد", "بازده سالانه", "نوسان سالانه", "بیشترین افت", "نسبت شارپ", "۱ دلار شد"],
+    statsTitle: (s, e) => `نتایج کل دوره (${s} تا ${e})`,
+    halvesTitle: "پایداری: دو دوره جدا",
+    halvesHint: (a, b) => `اگر نتیجه‌ای فقط در یک دوره خوب باشد، احتمالاً شانسی است. دوره اول: ${a}؛ دوره دوم: ${b}.`,
+    halvesCols: (a, b) => ["راهبرد", `بازده ${a}`, `بیشترین افت ${a}`, `بازده ${b}`, `بیشترین افت ${b}`],
+    rulesTitle: "اثر قاعده تأیید",
+    rulesHint: (p) => `راهبرد شش‌مرحله‌ای با میانگین ${p} ماهه و هر سه قاعده. قاعده بهتر معمولاً گردش معاملات کمتر و نسبت شارپ بالاتری دارد.`,
+    rulesCols: ["قاعده", "بازده سالانه", "بیشترین افت", "نسبت شارپ", "گردش معاملات در سال"],
+    stratTag: { better: "بهتر از S&P 500 به ازای ریسک", mixed: "ریسک کمتر، بازده کمتر", worse: "ضعیف‌تر از معیارها" },
+    stratVerdict: (v) => `راهبرد شش‌مرحله‌ای سالانه ${v.cagr}٪ بازده داشت در برابر ${v.spyCagr}٪ برای S&P 500، ولی بیشترین افتش ${v.mdd}٪ بود در برابر ${v.spyMdd}٪. نسبت شارپ (بازده به ازای ریسک) آن ${v.sharpe} است؛ S&P 500: ${v.spySharpe}، ۶۰/۴۰: ${v.sixtySharpe}.` + (v.trendBetter ? ` روند ساده سهام/نقد نسبت شارپ بالاتری (${v.trendSharpe}) داشت؛ یعنی بخش بزرگی از ارزش مدل از دوری از سهام در بازارهای نزولی می‌آید، نه از جابه‌جایی بین اوراق و کالاها.` : ""),
+    stratNote: "بازده‌ها ماهانه و با احتساب سود تقسیمی‌اند؛ نقد = بازده اوراق خزانه ۳ ماهه. شاخص کالا (^SPGSCI) سود وجه تضمین را شامل نمی‌شود، پس بازده واقعی یک صندوق کالا کمی فرق دارد. مالیات حساب نشده. «نسبت شارپ» بازده اضافه بر نقد تقسیم بر نوسان است. نتایج گذشته تضمینی برای آینده نیست و این توصیه سرمایه‌گذاری نیست.",
+    colStable: "پایدار در دو دوره؟",
+    stableTip: (a, b) => `بهترین مرحله: ${a} (دوره اول)، ${b} (دوره دوم)`,
+    stableVerdict: (y, n) => ` بهترین مرحله ${y} بخش از ${n} بخش در دو دوره جدا یکی یا نزدیک به هم بود.`,
+    btTitle: "چرخش بخش‌ها و بک‌تست",
+    btModeTb: "نمودار کتابی", btModeData: "طبق بک‌تست",
+    btKicker: "بازار سهام (نارنجی) معمولاً چند ماه جلوتر از اقتصاد (بنفش) حرکت می‌کند: پیش از پایان رکود کف می‌زند و پیش از اوج اقتصاد سقف. بالای نمودار نشان می‌دهد هر بخش در کدام مرحله قوی‌تر است؛ بین نسخه کتابی و نتیجه بک‌تست جابه‌جا شوید.",
+    econ: "اقتصاد", market: "بازار سهام", sectorsLbl: "بخش‌ها",
+    rotDataNote: "هر بخش در مرحله‌ای آمده که بیشترین بازده اضافه را داشته (درصد در سال). پررنگ = معتبرتر. مراحلی که کمتر از ۲۴ ماه داده دارند در نظر گرفته نمی‌شوند و بخش‌هایی که در هیچ مرحله‌ای از بازار جلو نزده‌اند نیامده‌اند.",
+    econPhases: ["رکود کامل", "آغاز بهبود", "بهبود کامل", "آغاز رکود"],
+    mktPhases: ["کف بازار", "بازار صعودی", "سقف", "بازار نزولی"],
+    btSecTitle: "بخش‌ها: بازده اضافه نسبت به S&P 500 (درصد در سال)",
+    btClsTitle: "دسته‌های دارایی: بازده (درصد در سال)",
+    btIntro: (s, e, n, m) => `بک‌تست ماهانه از ${s} تا ${e} (${n} ماه) با میانگین ${m} ماهه. مرحله هر ماه فقط با داده همان ماه تعیین شده و بازده ماه بعد ثبت شده است، پس از اطلاعات آینده استفاده نشده.`,
+    mixedOut: (k) => `${k} ماه سیگنال مختلط داشتند و کنار گذاشته شدند.`,
+    colSector: "بخش", colAsset: "دارایی", colBest: "بهترین مرحله (داده)", colChart: "مرحله در نمودار", colAgree: "هم‌خوانی",
+    agreeLbl: { yes: "بله", near: "نزدیک", no: "خیر" },
+    heatHint: "پررنگ: از نظر آماری معتبرتر (|t| ≥ ۲). کم‌رنگ: کمتر از ۲۴ ماه داده. کادر بنفش: مرحله‌ای که نمودار کتابی برای آن بخش می‌گوید. نشانگر را روی هر خانه نگه دارید تا جزئیات را ببینید.",
+    clsHint: "کادر بنفش: جایی که مدل پرینگ افزایش وزن آن دارایی را پیشنهاد می‌کند.",
+    monthsN: (n) => `${n} ماه`,
+    tipEx: (a, hit, n, tv) => `${a}٪ در سال نسبت به S&P 500 · در ${hit}٪ ماه‌ها بهتر از آن · ${n} ماه · t = ${tv}`,
+    tipAbs: (a, hit, n, tv) => `${a}٪ در سال · ${hit}٪ ماه‌ها مثبت · ${n} ماه · t = ${tv}`,
+    verdict: (y, nr, n) => `نمودار کتابی برای ${y} بخش از ${n} بخش دقیقاً همان مرحله‌ای را نشان می‌دهد که داده نشان داد و برای ${nr} بخش یک مرحله فاصله دارد. بقیه با داده نمی‌خوانند. پس ترتیب کتابی راهنمای کلی است، نه قانون.`,
+    btStage: (s, e) => `بهترین بخش‌ها در این مرحله طبق بک‌تست (${s} تا ${e})`,
+    btNote: "جایگزین‌های بلندمدت: اوراق قرضه = VUSTX (صندوق اوراق خزانه بلندمدت ونگارد)، سهام = SPY، کالاها = ^SPGSCI، طلا = قرارداد آتی طلا، نقد = بازده اوراق خزانه ۳ ماهه. داده بخش‌ها از شروع هر صندوق است (بیشتر از ۱۹۹۸؛ املاک از ۲۰۱۵؛ ارتباطات از ۲۰۱۸). «درصد در سال» میانگین ماهانه ضرب در ۱۲ است. نتایج گذشته تضمینی برای آینده نیست.",
+    classNames: { bonds: "اوراق قرضه بلندمدت", stocks: "سهام (S&P 500)", commodities: "کالاها", gold: "طلا", cash: "نقد" },
+    statStage: "مرحله فعلی", statMixed: "سیگنال مختلط",
+    legFitUp: "مناسب مرحله و صعودی", legOtherUp: "سایر صعودی‌ها", legDown: "نزولی",
+    barsL: "دارایی‌ها صعودی‌اند · میله‌ها: مرحله در ۱۲ ماه اخیر",
+    coreL: "دارایی اصلی چرخه",
+    fitL: (s) => `دارایی مناسب ${s}`,
+    fitAll: "همه دارایی‌ها",
+    ovWord: (a, up) => `${a} ${up ? "صعودی" : "نزولی"}`,
+    ovMonths: (n) => `${n} ماه`,
+    ovStory: (stg, dur, b, s, c, k, n, flip) => `${dur} است که در ${stg} هستیم: ${b}، ${s} و ${c}. ${k} از ${n} دارایی که معمولاً در این مرحله پیشتازند آن را تأیید می‌کنند${flip}.`,
+    ovFlip: (a, d, s) => `، و ${a} ${d} تا شروع ${s} فاصله دارد`,
+    ovFlipDone: (a, s) => `، و ${a} از میانگین عبور کرده؛ ${s} منتظر تأیید است`,
+    ovMixed: (b, s, c, list) => `سیگنال‌ها مختلط‌اند: ${b}، ${s} و ${c} با هیچ مرحله‌ای جور نیستند. نزدیک‌ترین: ${list}.`,
+    ovCoreL: (m) => `دارایی‌های اصلی · فاصله از میانگین ${m} ماهه`,
+    ovFlipNote: (d, into) => `${d} تا تغییر روند · ${into}`,
+    ovInto: (s) => `یعنی شروع ${s}`, ovIntoMixed: "یعنی سیگنال مختلط",
+    ovFitL: (s) => `دارایی‌های ${s} · بازده ۳ ماهه`,
+    ovConf: (n) => `تأییدکننده · ${n}`, ovConfSub: "الان صعودی",
+    ovWait: (n) => `در انتظار · ${n}`, ovWaitSub: "هنوز صعودی نیست",
+    ovGain: "سود", ovLoss: "زیان", ovFaded: "کم‌رنگ = در انتظار",
+    cta: (s) => `دارایی‌های ${s}`,
+    cycleTitle: "نمودار چرخه",
+    recTitle: "معمولاً در این مرحله چه جواب می‌دهد",
+    rec: [
+      "اوراق قرضه بلندمدت دولتی را ترجیح دهید؛ با کاهش نرخ بهره قیمتشان بالا می‌رود. سهم سهام و کالاها را کم نگه دارید. بخش‌های دفاعی مثل خدمات عمومی بهتر دوام می‌آورند و طلا معمولاً در همین مرحله قوی می‌شود.",
+      "اوراق قرضه را نگه دارید و پیش از آنکه بهبود اقتصاد آشکار شود سهام اضافه کنید. بخش‌های حساس به نرخ بهره و اول چرخه (مالی، کالاهای غیرضروری، شرکت‌های کوچک، فناوری) معمولاً پیشتازند. کالاها هنوز عقب‌اند.",
+      "هر سه دارایی بالا می‌روند. سهام معمولاً قوی‌ترین است؛ کم‌کم کالاها و فلزات صنعتی مثل مس و نقره را اضافه کنید. با جلو رفتن این مرحله، سررسید اوراق قرضه را کوتاه‌تر کنید.",
+      "با بالا رفتن نرخ بهره، اوراق بلندمدت را کم کنید؛ اوراق محافظت‌شده در برابر تورم بهتر دوام می‌آورند. در سهام بمانید با تمرکز بر بخش‌های چرخه‌ای: صنعتی، مواد اولیه، انرژی. کالاها دارایی اصلی‌اند.",
+      "با سقف زدن سهام، سهم آن را کم کنید و به سمت بخش‌های دفاعی (کالاهای ضروری، سلامت) بروید. کالاها، به‌خصوص انرژی و فلزات، معمولاً آخر از همه سقف می‌زنند. نقد و اوراق کوتاه‌مدت را بیشتر کنید.",
+      "حفظ سرمایه اولویت است: نقد و اوراق خزانه کوتاه‌مدت معمولاً بهترین‌اند. بخش‌های دفاعی کمتر افت می‌کنند. در اواخر این مرحله، وقتی نرخ بهره به اوج می‌رسد، کم‌کم اوراق بلندمدت بخرید تا برای مرحله ۱ آماده باشید.",
+    ],
+    tiltAssets: { cash: "نقد", bonds: "اوراق قرضه", stocks: "سهام", commodities: "کالاها" },
+    tiltLv: { ow: "افزایش وزن", n: "وزن عادی", uw: "کاهش وزن" },
+    strongHere: "دارایی‌هایی که معمولاً در این مرحله قوی‌اند",
+    chipsHint: "رنگ هر نماد، روند فعلی آن با میانگین انتخاب‌شده را نشان می‌دهد.",
+    watchTitle: "دارایی‌ها و مراحل قوی آن‌ها",
+    watchHint: "ردیف‌های برجسته معمولاً در مرحله انتخاب‌شده قوی‌اند. روند و فاصله با میانگین انتخاب‌شده در بالای صفحه حساب می‌شود.",
+    watchOnly: "فقط دارایی‌های مرحله انتخاب‌شده",
+    cols: ["دارایی", "مراحل قوی", "روند", "فاصله از میانگین", "بازده ۳ ماه", "بازده ۱۲ ماه", "وضعیت در این مرحله"],
+    fit: { good: "مناسب این مرحله و صعودی", warn: "مناسب این مرحله، هنوز صعودی نیست", off: "صعودی، خارج از مرحله معمولش", out: "خارج از مرحله معمول" },
+    groups: { bonds: "اوراق قرضه", stocks: "شاخص‌های سهام", sectors: "بخش‌های بازار سهام", metals: "فلزات", commodities: "کالاها و انرژی", currency: "ارز" },
+    noData: "داده دریافت نشد",
+    note: "روش: هر دارایی وقتی قیمتش بالای میانگین متحرک انتخاب‌شده (۳، ۶، ۱۲ یا ۱۸ ماه) است صعودی حساب می‌شود. ۱۲ ماه همان قاعده پرینگ است. قیمت‌ها از Yahoo Finance و تعدیل‌شده با سود نقدی‌اند. نزدیک میانگین، سیگنال ممکن است مدام عوض شود. پیشنهادهای هر مرحله و مراحل قوی هر دارایی، الگوهای کلی تاریخی بر اساس مدل پرینگ و چرخش بخش‌های بازارند و در هر چرخه فرق می‌کنند. این ابزار آموزشی است، نه توصیه سرمایه‌گذاری شخصی.",
+    num: (n) => n.toLocaleString("fa-IR"),
+    fmt: (n, d = 2) => n.toLocaleString("fa-IR", { minimumFractionDigits: d, maximumFractionDigits: d }),
+    date: (s) => new Date(s + "T12:00:00").toLocaleDateString("fa-IR", { year: "numeric", month: "long", day: "numeric" }),
+  },
+  en: {
+    dir: "ltr",
+    title: "Six-Stage Business Cycle",
+    sub: "The current stage is estimated from real bond, stock and commodity prices. Select a stage to see what is happening in it.",
+    assets: { bonds: "Bonds", stocks: "Stocks", commodities: "Commodities" },
+    stage: "Stage",
+    expansion: "Expansion", contraction: "Contraction",
+    rising: "Rising", falling: "Falling",
+    now: "Now",
+    names: ["Early contraction", "Trough", "Early recovery", "Expansion", "Late expansion", "Early downturn"],
+    desc: [
+      "The economy is contracting and the central bank is cutting rates. Falling yields lift bond prices. Earnings and demand are weak, so stocks and commodities are still falling.",
+      "The economy is near the bottom. Cheap money pushes stocks higher ahead of the real recovery. Demand for commodities is still weak.",
+      "Recovery is under way and demand returns, so commodities turn up too. All three assets rise together.",
+      "The expansion is established. Inflation and interest rates climb, so bonds peak and turn down. Stocks and commodities keep rising.",
+      "Late in the expansion, high rates squeeze profits and stocks peak. Strong demand and inflation keep commodities rising.",
+      "The economy rolls over from its peak and commodities top out too. All three assets fall, and cash is usually the lowest-risk place to be.",
+    ],
+    macroLabels: ["Growth", "Interest rates", "Inflation"],
+    macro: [
+      ["Slowing", "Falling", "Falling"],
+      ["Near bottom", "Low", "Low"],
+      ["Improving", "Near bottom", "Starting to rise"],
+      ["Strong", "Rising", "Rising"],
+      ["Near peak", "High", "High"],
+      ["Slowing", "Near peak", "Near peak"],
+    ],
+    live: "Live market reading",
+    liveStage: (s, n) => `${s}: ${n}`,
+    liveMixed: (list) => `Signals are mixed. Closest stages: ${list}`,
+    asOf: (d) => `Prices as of ${d}`,
+    built: (d) => `built ${d}`,
+    stale: "Couldn't fetch new prices, so this page shows the last saved data.",
+    price: "Price", ma: (m) => `${m}-mo avg`, gap: "Gap",
+    keyPrice: "Price", keyMa: (m) => `${m}-month average`,
+    period: "Moving average:",
+    periodOpt: (m) => `${m} mo`,
+    periodHint: "Shorter averages react sooner but give more false signals.",
+    check: "Try other combinations",
+    hint: "Change each asset's trend to see which stage it matches. It starts at the current market trend.",
+    match: (n) => `This combination matches ${n}.`,
+    mixed: "This combination doesn't match any stage. Closest stages:",
+    open: (n) => `Show ${n}`,
+    reset: "Reset to current market",
+    hist: (m) => `Stage history (month end, ${m}-month average)`,
+    legC: "Stages 1–3 (contraction side)", legE: "Stages 4–6 (expansion side)", legM: "Mixed signals", legNow: "Latest month",
+    matrix: "Stage matrix",
+    peak: "Peak", trough: "Trough",
+    legNowStage: "Current market stage", legPick: "Your selection",
+    periodShort: (m) => `${m}m`,
+    maLegend: "Tags on the curve: the stage each moving average points to (selected average is filled)",
+    turnLegend: "Outlined cell: the asset changes direction in this stage",
+    mixedNote: (m) => `${m}-month average: mixed signals`,
+    hStrategy: "Strategy", hFocus: "Focus on", hReduce: "Reduce",
+    hPrepare: (n) => `Preparing for ${n}`, hSignal: "Signal that the next stage has started",
+    signal: (n, a, up, m) => `${n} starts when ${a.toLowerCase()} turn ${up ? "up" : "down"}: price crosses ${up ? "above" : "below"} its ${m}-month average.`,
+    signalNow: (sym, gap, above) => `Now: ${sym} is ${gap}% ${above ? "above" : "below"} it.`,
+    plan: [
+      { strategy: "Defend first, then position for the recovery.",
+        focus: ["Long-term Treasuries (TLT, IEF): falling rates lift their prices", "Gold (GLD) and utilities (XLU) as defensive holdings", "A cash reserve for buying stocks later"],
+        reduce: ["Cyclical stocks and commodities, which are still falling", "Oil and industrial metals"],
+        prepare: ["Build a watchlist of quality stocks and early-cycle sectors (financials, consumer discretionary, small caps)", "Plan to buy stocks in steps, not all at once", "Decide in advance how much of your cash will go into stocks"] },
+      { strategy: "Buy stocks while the news is still bad.",
+        focus: ["Stocks, especially early-cycle sectors: financials (XLF), consumer discretionary (XLY), small caps (IWM), tech (QQQ)", "Keep holding bonds; they are still rising", "Gold is often still strong"],
+        reduce: ["Too much cash; it now earns less than stocks and bonds", "Commodities, which have not turned up yet"],
+        prepare: ["Open a small position in commodities and industrial metals (copper, silver)", "Research industrials and materials for the next stage", "Start shortening bond maturities"] },
+      { strategy: "Stay fully invested; all three assets are rising.",
+        focus: ["Stocks stay the core, tilted to tech (XLK) and industrials (XLI)", "Add commodities: copper (CPER), silver (SLV), broad commodities (DBC)", "Inflation-protected bonds (TIP) instead of regular long-term bonds"],
+        reduce: ["Long-term bonds; their best gains are behind them", "Defensive sectors (utilities, staples), which lag in a recovery"],
+        prepare: ["Move bond money from long-term to short-term or inflation-protected bonds", "Raise exposure to energy and materials", "Set the price level (stop) where you will sell long-term bonds"] },
+      { strategy: "Ride growth and inflation; get out of long-term bonds.",
+        focus: ["Cyclical stocks: industrials (XLI), materials (XLB), energy (XLE)", "Commodities and oil (DBC, USO)", "Short-term and inflation-protected bonds (SHY, TIP)"],
+        reduce: ["Long-term bonds (TLT), which fall as rates rise", "Rate-sensitive stocks such as utilities"],
+        prepare: ["Take some profit on the stocks that have risen most", "Start shifting toward defensive sectors: staples (XLP), health care (XLV)", "Tighten stop levels on stock holdings"] },
+      { strategy: "Protect stock gains; let commodities run.",
+        focus: ["Energy (XLE), oil (USO), broad commodities (DBC)", "Defensive sectors: staples (XLP), health care (XLV)", "Cash and short-term Treasuries (SHY) at good yields"],
+        reduce: ["Broad stock exposure, especially growth stocks and small caps", "Long-term bonds, until interest rates peak"],
+        prepare: ["Plan your exit from commodities; they usually peak last", "Raise cash further", "Watch interest rates and long-term bond yields for a peak; that is when to start buying long-term bonds"] },
+      { strategy: "Preserve capital: cash is the best asset.",
+        focus: ["Cash and short-term Treasuries (SHY)", "Defensive sectors that fall least: staples, health care, utilities", "The US dollar (UUP) often strengthens"],
+        reduce: ["Stocks and commodities, which are both falling", "Leverage and concentrated positions"],
+        prepare: ["As rates peak, buy long-term Treasuries (TLT, IEF) in steps", "Add gold, which often turns up early", "Keep cash ready for stocks in stage 2"] },
+    ],
+    nextTitle: "Next move",
+    whereT: "Where we are", doT: "What to do now", watchT: "What to watch", reduceT: "Reduce",
+    agree: (k, n, st) => `${k} of ${n} moving averages point to ${st}.`,
+    others: (list) => `Others: ${list}`,
+    conv: { high: "High conviction", mid: "Medium conviction", low: "Low conviction" },
+    convNote: {
+      high: "All averages agree, so the stage reading is strong.",
+      mid: "Most averages agree; act with some caution.",
+      low: "The averages disagree; make changes in small steps.",
+    },
+    actNow: "Fit this stage and rising", waitList: "Fit, but not rising yet (wait)",
+    gapToGo: (g) => `${g}% from crossing its average; the fuller the bar, the closer the next stage.`,
+    flipped: "This asset has already turned; the next stage may be starting.",
+    nextNote: "A summary of general patterns from Pring's model, not personal investment advice.",
+    brand: "Six-Stage",
+    nav: ["Today", "What happens next", "Live prices", "Stage details", "Cycle chart", "Assets", "Economy", "History", "Sector rotation", "Strategy test", "Stage matrix"],
+    afterT: "What happens next",
+    afterSub: (s, a, b) => `What happened after every month-end the market spent in ${s}? Monthly data from ${a} to ${b}.`,
+    afterRetT: "Returns afterwards (average and share of times positive)",
+    afterCols: ["", "3 months", "6 months", "12 months"],
+    afterAssets: { stocks: "Stocks (S&P 500)", bonds: "Long-term bonds", commodities: "Commodities", gold: "Gold" },
+    afterPos: (p) => `positive ${p}% of the time`,
+    afterAll: (v) => `all months: ${v}`,
+    afterNone: "Not enough data",
+    afterWarn: (m, e) => `Small sample: this stage happened in only ${m} months across ${e} separate episodes. Read these numbers with caution.`,
+    afterDurT: "How long it usually lasts",
+    afterDur: (med, avg, n) => `Median ${med} months, average ${avg} months (${n} episodes).`,
+    afterNow: (k) => `We are in month ${k} of this stage.`,
+    afterNowOther: "This stage is not active right now.",
+    afterNextT: "Which stage usually comes next",
+    afterNextPring: (s) => `Pring's textbook order: ${s}`,
+    afterNextNone: "No finished episode of this stage yet.",
+    afterNote: "Returns are measured from every month-end inside the stage, so the periods overlap. “All months” is the long-run average, for comparison. Past results don't guarantee future ones.",
+    navResearch: "Research", researchT: "Research", researchSub: "How the model has done in the past. Not needed for daily use.",
+    todayT: "Today", breadth: (k, n) => `${k} of ${n} assets are rising.`,
+    ruleLbl: "Confirmation:",
+    ruleOpt: { raw: "None", band: "2% band", hold: "Hold 1 mo" },
+    ruleTip: {
+      raw: "The trend flips every time the price crosses its average.",
+      band: "The trend flips only when the price crosses its average by more than 2%.",
+      hold: "The trend flips only after the price stays on the other side for about a month (in the backtest: two month-ends in a row).",
+    },
+    econTitle: "Economic check",
+    econKicker: "Four US economic indicators from FRED (Federal Reserve Bank of St. Louis). Each one votes: expanding (+1), unclear (0) or contracting (−1). A positive score fits stages 3–5 (expansion side); a negative score fits stages 6, 1 and 2 (contraction side).",
+    econNames: { curve: "Yield curve (10-yr minus 2-yr)", unemployment: "Unemployment rate", credit: "Credit spread (Baa minus 10-yr)", production: "Industrial production" },
+    econVote: { "1": "Expanding", "0": "Unclear", "-1": "Contracting" },
+    econDetail: {
+      curve: (v) => (v < 0 ? "Inverted; this usually comes before a recession." : v <= 0.25 ? "Nearly flat; typical of a late cycle." : "Positive; normal for an expansion."),
+      unemployment: (d) => `3-month average is ${d} points above its low of the prior 12 months (Sahm rule: 0.5 signals a recession).`,
+      credit: (d, above) => `${d} points ${above ? "above" : "below"} its 12-month average.`,
+      production: (d) => `${d}% versus a year ago.`,
+    },
+    econScore: (s) => `Score ${s} of 4`,
+    econSide: { exp: "the expansion side (stages 3–5)", con: "the contraction side (stages 6, 1, 2)" },
+    econVerdict: (score, side, stage, agree) => agree == null
+      ? `The economic score is ${score}, which doesn't point clearly either way.`
+      : agree
+        ? `The economic score is ${score}, pointing to ${side}. The price model (${stage}) is on the same side, so they agree.`
+        : `The economic score is ${score}, pointing to ${side}. The price model (${stage}) is on the other side of the cycle, so they disagree; act with caution.`,
+    econHist: "Economic score over the last 5 years",
+    econNote: "Economic data is published with a delay (unemployment and production monthly); each indicator shows its date. The scoring rules are simple and are not a forecast.",
+    econStale: "Couldn't fetch new economic data, so this shows the last saved reading.",
+    nextEcon: (score, agree) => agree == null ? `Economy: score ${score} of 4, no clear direction.` : agree ? `Economy: score ${score} of 4, agrees with this stage.` : `Economy: score ${score} of 4, disagrees with this stage.`,
+    stratTitle: "Strategy test",
+    stratKicker: (p, r) => `What if you had invested each month using Pring's weights for the current stage, since the 1990s? Uses the ${p}-month average and the "${r}" rule, after 0.1% trading costs. In months with mixed signals the previous mix is kept.`,
+    stratNames: { pring: "Six-stage strategy", trend: "Simple trend (stocks or cash)", spy: "Buy and hold S&P 500", sixty: "60% stocks / 40% bonds", equal: "Equal weight (4 assets)" },
+    wStage: "Stage",
+    statCols: ["Strategy", "Return / yr", "Volatility / yr", "Max drawdown", "Sharpe ratio", "$1 grew to"],
+    statsTitle: (s, e) => `Full period (${s} to ${e})`,
+    halvesTitle: "Stability: two separate periods",
+    halvesHint: (a, b) => `If a result only holds in one period, it is probably luck. First period: ${a}; second period: ${b}.`,
+    halvesCols: (a, b) => ["Strategy", `Return ${a}`, `Max drawdown ${a}`, `Return ${b}`, `Max drawdown ${b}`],
+    rulesTitle: "Effect of the confirmation rule",
+    rulesHint: (p) => `The six-stage strategy with the ${p}-month average under each rule. A better rule usually trades less and has a higher Sharpe ratio.`,
+    rulesCols: ["Rule", "Return / yr", "Max drawdown", "Sharpe ratio", "Turnover / yr"],
+    stratTag: { better: "Better than S&P 500 per unit of risk", mixed: "Less risk, less return", worse: "Weaker than benchmarks" },
+    stratVerdict: (v) => `The six-stage strategy returned ${v.cagr}% a year versus ${v.spyCagr}% for the S&P 500, but its worst drop was ${v.mdd}% versus ${v.spyMdd}%. Its Sharpe ratio (return per unit of risk) is ${v.sharpe}; S&P 500: ${v.spySharpe}, 60/40: ${v.sixtySharpe}.` + (v.trendBetter ? ` The simple stocks-or-cash trend rule had a higher Sharpe ratio (${v.trendSharpe}), so much of the model's value comes from avoiding stocks in bear markets, not from rotating between bonds and commodities.` : ""),
+    stratNote: "Monthly returns including dividends; cash = 3-month Treasury bill yield. The commodity index (^SPGSCI) excludes interest on collateral, so a real commodity fund's return differs somewhat. Taxes are ignored. The Sharpe ratio is return above cash divided by volatility. Past results don't guarantee future ones, and this is not investment advice.",
+    colStable: "Stable in both periods?",
+    stableTip: (a, b) => `Best stage: ${a} (first period), ${b} (second period)`,
+    stableVerdict: (y, n) => ` The best stage was the same or adjacent in both separate periods for ${y} of ${n} sectors.`,
+    btTitle: "Sector rotation and backtest",
+    btModeTb: "Textbook chart", btModeData: "Backtest result",
+    btKicker: "The stock market (orange) usually moves a few months ahead of the economy (purple): it bottoms before the recession ends and tops before the economy peaks. The top of the chart shows the stage where each sector is strongest; switch between the textbook version and the backtest result.",
+    econ: "Economy", market: "Stock market", sectorsLbl: "Sectors",
+    rotDataNote: "Each sector sits in the stage where it beat the market most (% per year). Bold = more reliable. Stage cells with fewer than 24 months of data are ignored, and sectors that never beat the market in any stage are left out.",
+    econPhases: ["Full recession", "Early recovery", "Full recovery", "Early recession"],
+    mktPhases: ["Market bottom", "Bull market", "Top", "Bear market"],
+    btSecTitle: "Sectors: return above the S&P 500 (% per year)",
+    btClsTitle: "Asset classes: return (% per year)",
+    btIntro: (s, e, n, m) => `Monthly backtest from ${s} to ${e} (${n} months), using the ${m}-month average. Each month's stage uses only data available that month, and the following month's return is recorded, so there is no look-ahead.`,
+    mixedOut: (k) => `${k} months had mixed signals and are left out.`,
+    colSector: "Sector", colAsset: "Asset", colBest: "Best stage (data)", colChart: "Chart says", colAgree: "Agrees?",
+    agreeLbl: { yes: "Yes", near: "Close", no: "No" },
+    heatHint: "Bold: statistically stronger (|t| ≥ 2). Faded: fewer than 24 months of data. Purple outline: the stage the textbook chart gives that sector. Hover a cell for details.",
+    clsHint: "Purple outline: where Pring's model says to overweight that asset.",
+    monthsN: (n) => `${n} months`,
+    tipEx: (a, hit, n, tv) => `${a}% per year vs. S&P 500 · beat it in ${hit}% of months · ${n} months · t = ${tv}`,
+    tipAbs: (a, hit, n, tv) => `${a}% per year · positive in ${hit}% of months · ${n} months · t = ${tv}`,
+    verdict: (y, nr, n) => `The textbook chart puts ${y} of ${n} sectors in exactly the stage the data picked, and ${nr} more within one stage. The rest don't match. Treat the textbook order as a rough guide, not a rule.`,
+    btStage: (s, e) => `Best sectors in this stage in the backtest (${s} to ${e})`,
+    btNote: "Long-history stand-ins: bonds = VUSTX (Vanguard long-term Treasury fund), stocks = SPY, commodities = ^SPGSCI, gold = gold futures, cash = 3-month Treasury bill yield. Sector data starts when each fund launched (mostly 1998; real estate 2015; communication services 2018). \"Per year\" is the average monthly figure times 12. Past results don't guarantee future ones.",
+    classNames: { bonds: "Long-term bonds", stocks: "Stocks (S&P 500)", commodities: "Commodities", gold: "Gold", cash: "Cash" },
+    statStage: "Current stage", statMixed: "Mixed signals",
+    legFitUp: "Fit & rising", legOtherUp: "Other rising", legDown: "Falling",
+    barsL: "of assets rising · bars: stage over the last 12 months",
+    coreL: "Core cycle assets",
+    fitL: (s) => `assets fit ${s}`,
+    fitAll: "ALL ASSETS",
+    ovWord: (a, up) => `${a.toLowerCase()} ${up ? "rising" : "falling"}`,
+    ovMonths: (n) => `${n} month${n === "1" ? "" : "s"}`,
+    ovStory: (stg, dur, b, s, c, k, n, flip) => `We are in ${stg} for ${dur}: ${b}, ${s} and ${c}. ${k} of ${n} assets that usually lead here are confirming it${flip}.`,
+    ovFlip: (a, d, s) => `, and ${a.toLowerCase()} are ${d} from starting ${s}`,
+    ovFlipDone: (a, s) => `, and ${a.toLowerCase()} have crossed their average; ${s} is waiting for confirmation`,
+    ovMixed: (b, s, c, list) => `Signals are mixed: ${b}, ${s} and ${c} don't match any single stage. Closest: ${list}.`,
+    ovCoreL: (m) => `Core assets · distance from ${m}-month average`,
+    ovFlipNote: (d, into) => `${d} from flipping · ${into}`,
+    ovInto: (s) => `would start ${s}`, ovIntoMixed: "would give a mixed signal",
+    ovFitL: (s) => `Assets for ${s} · 3-month return`,
+    ovConf: (n) => `Confirming · ${n}`, ovConfSub: "rising now",
+    ovWait: (n) => `Waiting · ${n}`, ovWaitSub: "not rising yet",
+    ovGain: "gained", ovLoss: "lost", ovFaded: "faded = waiting",
+    cta: (s) => `ASSETS FOR ${s.toUpperCase()}`,
+    cycleTitle: "Cycle chart",
+    recTitle: "What usually works in this stage",
+    rec: [
+      "Favor long-term government bonds; their prices rise as rates fall. Keep stocks and commodities light. Defensive sectors such as utilities hold up better, and gold often starts to strengthen here.",
+      "Keep bonds and start adding stocks before the recovery is obvious. Rate-sensitive and early-cycle areas (financials, consumer discretionary, small caps, tech) tend to lead. Commodities still lag.",
+      "All three assets rise. Stocks are usually strongest; start adding commodities and industrial metals such as copper and silver. Shorten bond maturities as the stage matures.",
+      "Cut long-term bonds as rates climb; inflation-protected bonds hold up better. Stay in stocks with a tilt to cyclicals: industrials, materials, energy. Commodities are a core holding.",
+      "Trim stocks as they peak and shift toward defensive sectors (staples, health care). Commodities, especially energy and metals, usually peak last. Raise cash and short-term Treasuries.",
+      "Protect capital: cash and short-term Treasuries are usually best, and defensive sectors fall least. Late in the stage, as rates peak, start building long-term bond positions for stage 1.",
+    ],
+    tiltAssets: { cash: "Cash", bonds: "Bonds", stocks: "Stocks", commodities: "Commodities" },
+    tiltLv: { ow: "Overweight", n: "Neutral", uw: "Underweight" },
+    strongHere: "Assets that are usually strong in this stage",
+    chipsHint: "Each ticker's color shows its current trend on the selected average.",
+    watchTitle: "Assets and their strong stages",
+    watchHint: "Highlighted rows are usually strong in the selected stage. Trend and gap use the moving average chosen at the top of the page.",
+    watchOnly: "Only assets for the selected stage",
+    cols: ["Asset", "Strong in stages", "Trend", "Gap from avg", "3-mo return", "12-mo return", "Fit for this stage"],
+    fit: { good: "Fits this stage, rising", warn: "Fits this stage, not rising yet", off: "Rising outside its usual stage", out: "Outside its usual stage" },
+    groups: { bonds: "Bonds", stocks: "Stock indexes", sectors: "Stock sectors", metals: "Metals", commodities: "Commodities and energy", currency: "Currency" },
+    noData: "No data",
+    note: "Method: an asset counts as rising when its price is above the selected moving average (3, 6, 12 or 18 months). 12 months is Pring's own rule. Prices come from Yahoo Finance, adjusted for dividends. Near the average, signals can flip back and forth. Stage recommendations and each asset's strong stages are general historical tendencies from Pring's model and sector-rotation research, and they vary from cycle to cycle. This is a teaching tool, not personal investment advice.",
+    num: (n) => String(n),
+    fmt: (n, d = 2) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }),
+    date: (s) => new Date(s + "T12:00:00").toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+  },
+};
+
+let lang = "fa";
+try { const s = localStorage.getItem("cycle-lang"); if (s === "fa" || s === "en") lang = s; } catch (e) {}
+const liveTrend = () => DATA ? Object.fromEntries(ASSETS.map((a) => [a, DATA.assets[a].dir])) : { bonds: 1, stocks: 1, commodities: -1 };
+let sel = liveStageIdx ?? (DATA && DATA.nearest.length ? DATA.nearest[0] - 1 : 0);
+let trend = liveTrend();
+
+// Chart geometry: curve area on top, asset signal strip below, row labels in the left gutter
+const W = 720, X0 = 100, H = 392, MID = 160, AMP = 66, STRIP = 262, COL = W / 6;
+let dotX = null;
+const curveY = (x) => MID + AMP * Math.sin((2 * Math.PI * x) / W);
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, text) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  return n;
+};
+const h = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const stageLabel = (i) => `${T[lang].stage} ${T[lang].num(i + 1)}`;
+
+function drawLive() {
+  const t = T[lang];
+  const box = document.getElementById("live");
+  if (!DATA) { box.hidden = true; return; }
+  document.getElementById("t-live").textContent = t.live;
+  const stale = document.getElementById("stale");
+  stale.hidden = !DATA.stale;
+  stale.textContent = t.stale;
+  document.getElementById("live-stage").textContent = DATA.stage
+    ? t.liveStage(stageLabel(DATA.stage - 1), t.names[DATA.stage - 1])
+    : t.liveMixed(DATA.nearest.map((n) => stageLabel(n - 1)).join(lang === "fa" ? "، " : ", "));
+  document.getElementById("live-meta").textContent = `${t.asOf(t.date(DATA.asOf))} · ${t.built(DATA.generated)}`;
+  document.getElementById("t-period").textContent = t.period;
+  document.getElementById("t-period-hint").textContent = t.periodHint;
+  // Confirmation-rule switch
+  document.getElementById("t-rule").textContent = t.ruleLbl;
+  const rseg = document.getElementById("rule-seg");
+  rseg.setAttribute("aria-label", t.ruleLbl);
+  rseg.replaceChildren();
+  RULE_KEYS.forEach((r) => {
+    const b = h("button", null, t.ruleOpt[r]);
+    b.type = "button"; b.id = "rule-" + r;
+    b.title = t.ruleTip[r];
+    b.setAttribute("aria-pressed", String(r === rule));
+    b.addEventListener("click", () => setRule(r));
+    rseg.append(b);
+  });
+  // Same switch in the sidebar and in the cycle chart header, kept in sync
+  document.querySelectorAll(".period-seg[data-where]").forEach((seg) => {
+    const where = seg.dataset.where;
+    seg.setAttribute("aria-label", t.period);
+    seg.replaceChildren();
+    PERIOD_KEYS.filter((p) => ALL.periods[p]).forEach((p) => {
+      const b = h("button", null, t.periodOpt(p));
+      b.type = "button"; b.id = `period-${where}-${p}`;
+      b.setAttribute("aria-pressed", String(p === period));
+      b.addEventListener("click", () => setPeriod(p, b.id));
+      seg.append(b);
+    });
+  });
+
+  const cards = document.getElementById("cards");
+  cards.replaceChildren();
+  ASSETS.forEach((a) => {
+    const d = DATA.assets[a];
+    const up = d.dir > 0;
+    const card = h("div", "acard " + a);
+    const head = h("div", "acard-head");
+    const tile = h("div", "tile " + a);
+    tile.innerHTML = ICONS[a];
+    const txt = h("div");
+    txt.append(h("span", "t", t.assets[a]), h("span", "s num", `${d.symbol} · ${t.date(d.date)}`));
+    head.append(tile, txt);
+    const chips = h("div", "chiprow");
+    chips.append(
+      h("span", "pill " + (up ? "up" : "down"), (up ? "↑ " : "↓ ") + (up ? t.rising : t.falling)),
+      h("span", "pill num", `${t.gap} ${(d.gap > 0 ? "+" : "") + t.fmt(d.gap)}%`),
+    );
+    const box = h("div", "dbox");
+    const nums = h("div", "nums");
+    [[t.price, t.fmt(d.price)], [t.ma(period), t.fmt(d.ma)]].forEach(([k, v]) => {
+      const s = h("span", null, k + " ");
+      s.append(h("b", "num", v));
+      nums.append(s);
+    });
+    box.append(nums, spark(d.spark, up), sparkKey());
+    card.append(head, chips, box);
+    cards.append(card);
+  });
+}
+
+const ICONS = {
+  bonds: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9.5 12 5l8 4.5M5.5 10v7M10 10v7M14 10v7M18.5 10v7M4 19.5h16"/></svg>',
+  stocks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 3.5 3.5L20 8M15 8h5v5"/></svg>',
+  commodities: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5c3 4 5.5 6.8 5.5 10a5.5 5.5 0 0 1-11 0c0-3.2 2.5-6 5.5-10z"/></svg>',
+};
+const NAV_ICONS = [
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3-4.5 5-3"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18" stroke="var(--side)" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 14c2.5-6 5-6 7.5 0s5 6 7.5 0"/><path d="M6 10c2.5-6 5-6 7.5 0s5 6 7.5 0" opacity=".55"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l5-7 4 3 8-11"/><path d="M3 21h18"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>',
+];
+const NAV_IDS = ["today", "after-sec", "live", "stage-sec", "cycle-sec", "watch-sec", "econ-sec", "hist-sec", "bt-sec", "strat-sec", "matrix-sec"];
+const NAV_RESEARCH_AT = 8;   // a "Research" label goes before this item
+// Stage the summary row describes: the live stage, or the selected one when signals are mixed
+const focusIdx = () => liveStageIdx ?? sel;
+const fitsUp = (s) => WATCH.filter((w) => !w.error && w.stages.includes(s + 1) && wp(w).dir > 0);
+
+function drawFrame() {
+  const t = T[lang];
+  const f = focusIdx();
+  document.getElementById("t-brand").textContent = t.brand;
+  document.getElementById("side-badge").textContent = liveStageIdx != null ? t.num(liveStageIdx + 1) : "?";
+  document.getElementById("side-name").textContent = liveStageIdx != null ? t.names[liveStageIdx] : t.statMixed;
+  document.getElementById("side-sub").textContent = DATA ? t.asOf(t.date(DATA.asOf)) : "";
+  document.getElementById("head-date").textContent = DATA ? t.date(DATA.asOf) : "";
+  document.getElementById("t-cycle").textContent = t.cycleTitle;
+
+  const nav = document.getElementById("nav");
+  if (!nav.children.length) {
+    NAV_IDS.forEach((id, i) => {
+      if (i === NAV_RESEARCH_AT) nav.append(h("span", "nav-sep"));
+      const a = h("a");
+      a.href = "#" + id;
+      a.dataset.id = id;
+      a.innerHTML = NAV_ICONS[i] + "<span></span>";
+      nav.append(a);
+    });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) nav.querySelectorAll("a").forEach((a) => a.classList.toggle("on", a.dataset.id === e.target.id));
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    NAV_IDS.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+    nav.firstChild.classList.add("on");
+  }
+  nav.querySelectorAll("a").forEach((a, i) => { a.querySelector("span").textContent = t.nav[i]; });
+  const sep = nav.querySelector(".nav-sep");
+  if (sep) sep.textContent = t.navResearch;
+  document.getElementById("t-research").textContent = t.researchT;
+  document.getElementById("t-research-sub").textContent = t.researchSub;
+
+  // CTA: jump to the assets that fit the focus stage
+  const ups = fitsUp(f);
+  document.getElementById("cta-label").textContent = t.cta(stageLabel(f));
+  const cnt = document.getElementById("cta-count");
+  cnt.textContent = t.num(ups.length);
+  cnt.hidden = !WATCH.length;
+
+  drawOverview(t, f);
+  document.getElementById("fit-all-l").textContent = t.fitAll;
+}
+
+// ---- Overview: one sentence, the month strip, then "what could change the stage" and "what is working" ----
+function drawOverview(t, f) {
+  if (!DATA) return;
+  const escH = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const iso = (s) => `<span class="ltr num">${s}</span>`;
+  const sgn = (v, d = 2) => (v > 0 ? "+" : v < 0 ? "−" : "") + t.fmt(Math.abs(v), d) + "%";
+  const thr = rule === "band" ? 2 : 0;
+  // % move needed before an asset's trend flips under the current confirmation rule
+  const flipDist = (a) => (a.dir > 0 ? Math.max(0, a.gap + thr) : Math.max(0, thr - a.gap));
+  const stageOf = (dirs) => STAGES.findIndex((s) => ASSETS.every((k, i) => s[k] === dirs[i]));
+  const A = DATA.assets;
+  const live = liveStageIdx;
+
+  // 1. Sentence
+  const word = (k) => `<em class="${A[k].dir > 0 ? "up" : "down"}">${escH(t.ovWord(t.assets[k], A[k].dir > 0))}</em>`;
+  const H = DATA.history || [];
+  let story;
+  if (live != null) {
+    let since = 0;
+    for (let i = H.length - 1; i >= 0 && H[i].stage === live + 1; i--) since++;
+    const nxt = (live + 1) % 6;
+    const fk = ASSETS.find((k) => STAGES[nxt][k] !== STAGES[live][k]);
+    const d = flipDist(A[fk]);
+    const fitAll = WATCH.filter((w) => !w.error && w.stages.includes(live + 1));
+    const fitUp = fitAll.filter((w) => wp(w).dir > 0);
+    const flip = d > 0 ? t.ovFlip(t.assets[fk], iso(sgn(d).replace(/^[+−]/, "")), stageLabel(nxt)) : t.ovFlipDone(t.assets[fk], stageLabel(nxt));
+    story = t.ovStory(`<em class="acc">${escH(stageLabel(live) + " · " + t.names[live])}</em>`, escH(t.ovMonths(t.num(Math.max(since, 1)))),
+      word("bonds"), word("stocks"), word("commodities"), t.num(fitUp.length), t.num(fitAll.length), flip);
+  } else {
+    story = t.ovMixed(word("bonds"), word("stocks"), word("commodities"), escH(DATA.nearest.map((n) => stageLabel(n - 1)).join(lang === "fa" ? "، " : ", ")));
+  }
+  document.getElementById("ov-story").innerHTML = story;
+
+  // 2. Stage by month (last 12 month-ends)
+  const loc = lang === "fa" ? "fa-IR" : "en-US";
+  document.getElementById("ov-months").innerHTML = H.slice(-12).map((r, i, arr) => {
+    const m = new Date(r.month + "-28T12:00:00").toLocaleDateString(loc, { month: "short" });
+    const cls = r.stage ? (r.stage <= 3 ? "c" : "e") : "m";
+    const title = `${t.date(r.month + "-28")}: ${r.stage ? stageLabel(r.stage - 1) : t.statMixed}`;
+    return `<div class="${cls}${i === arr.length - 1 ? " now" : ""}" title="${escH(title)}"><b>${r.stage ? t.num(r.stage) : "–"}</b>${escH(m)}</div>`;
+  }).join("");
+
+  // 3. Core assets: centred bars (±10%), distance to flip and what a flip would mean
+  document.getElementById("ov-core-l").textContent = t.ovCoreL(t.num(period));
+  document.getElementById("ov-core").innerHTML = ASSETS.map((k, i) => {
+    const a = A[k], up = a.dir > 0, g = Math.max(-10, Math.min(10, a.gap));
+    const dirs = ASSETS.map((x) => A[x].dir);
+    dirs[i] = -dirs[i];
+    const into = stageOf(dirs);
+    const note = t.ovFlipNote(iso(sgn(flipDist(a)).replace(/^[+−]/, "")), into >= 0 ? t.ovInto(stageLabel(into)) : t.ovIntoMixed);
+    return `<div class="ov-row"><div class="t"><b>${escH(t.assets[k])} <span class="sym ltr">${escH(a.symbol)}</span></b><span class="v ${up ? "pos" : "neg"}">${up ? "↑" : "↓"} ${sgn(a.gap)}</span></div>
+      <div class="cbar"><span class="zero"></span><span class="fill" style="left:${g >= 0 ? 50 : 50 + g * 5}%;width:${Math.max(1.2, Math.abs(g) * 5)}%;background:${up ? "var(--up)" : "var(--down)"}"></span></div>
+      <span class="note">${note}</span></div>`;
+  }).join("");
+
+  // 4. Assets for the stage: confirming (rising) and waiting, ranked by 3-month return on one shared scale
+  const fit = WATCH.filter((w) => !w.error && w.stages.includes(f + 1));
+  const conf = fit.filter((w) => wp(w).dir > 0), wait = fit.filter((w) => wp(w).dir < 0);
+  const mx = Math.max(...fit.map((w) => Math.abs(w.ret.m3 || 0)), 1);
+  const byRet = (x, y) => (y.ret.m3 || 0) - (x.ret.m3 || 0);
+  const row = (w) => {
+    const r = w.ret.m3 || 0, half = (Math.abs(r) / mx) * 50, rising = wp(w).dir > 0;
+    return `<div class="ov-rank"><b class="${rising ? "pos" : "neg"}" title="${escH(w[lang])}">${escH(w.symbol)}</b>
+      <div class="cbar"><span class="zero"></span><span class="fill" style="left:${r >= 0 ? 50 : 50 - half}%;width:${Math.max(1, half)}%;background:${r >= 0 ? "var(--up)" : "var(--down)"};opacity:${rising ? 1 : 0.45}"></span></div>
+      <span class="v ${r >= 0 ? "pos" : "neg"}">${sgn(r, 1)}</span></div>`;
+  };
+  document.getElementById("ov-fit-l").textContent = t.ovFitL(stageLabel(f));
+  document.getElementById("ov-fit").innerHTML =
+    (conf.length ? `<div class="ov-sub pos"><span>${escH(t.ovConf(t.num(conf.length)))}</span><span>${escH(t.ovConfSub)}</span></div>${[...conf].sort(byRet).map(row).join("")}` : "")
+    + (wait.length ? `<div class="ov-sub neg"><span>${escH(t.ovWait(t.num(wait.length)))}</span><span>${escH(t.ovWaitSub)}</span></div>${[...wait].sort(byRet).map(row).join("")}` : "");
+  document.getElementById("ov-legend").innerHTML =
+    `<span><i style="background:var(--up)"></i>${escH(t.ovGain)}</span><span><i style="background:var(--down)"></i>${escH(t.ovLoss)}</span><span><i style="background:var(--down);opacity:.45"></i>${escH(t.ovFaded)}</span>`;
+}
+
+// "Today": headline line (agreement, economy, breadth) and the two plan boxes.
+// The sentence, month strip, core assets and confirming/waiting lists are drawn by drawOverview.
+function drawNext() {
+  const t = T[lang];
+  const sec = document.getElementById("today");
+  if (!DATA) { sec.hidden = true; return; }
+  const f = focusIdx();
+  const pl = t.plan[f];
+  document.getElementById("t-today").textContent = t.todayT;
+
+  // Agreement across the four moving averages
+  const avail = PERIOD_KEYS.filter((p) => pd(p));
+  const agree = avail.filter((p) => pd(p).stage === f + 1);
+  const others = avail.filter((p) => pd(p).stage !== f + 1);
+  const level = agree.length === avail.length ? "high" : agree.length * 2 > avail.length ? "mid" : "low";
+  const conv = document.getElementById("next-conv");
+  conv.className = "conv " + level;
+  conv.textContent = t.conv[level];
+
+  // One line of supporting facts
+  const meta = document.getElementById("today-meta");
+  meta.replaceChildren();
+  const fact = (txt, cls) => { const s = h("span", cls || null, txt); meta.append(s); };
+  fact(t.agree(t.num(agree.length), t.num(avail.length), stageLabel(f)) + (others.length ? " " + t.others(others.map((p) => `${t.periodShort(p)} → ${pd(p).stage ? stageLabel(pd(p).stage - 1) : t.statMixed}`).join(lang === "fa" ? "، " : ", ")) : ""));
+  const ea = econAgree();
+  if (ea) {
+    const agreeF = ea.side ? ea.side === stageSide(f + 1) : null;
+    fact(t.nextEcon(signed(ea.M.score, 0), agreeF), agreeF === false ? "warn" : null);
+  }
+  const ok = WATCH.filter((w) => !w.error);
+  if (ok.length) fact(t.breadth(t.num(ok.filter((w) => wp(w).dir > 0).length), t.num(ok.length)));
+
+  // Two plan boxes: what to do now, and how to get ready for the next stage
+  const grid = document.getElementById("next-grid");
+  grid.replaceChildren();
+  const box = (cls, icon, title) => {
+    const bx = h("div", "nm-box");
+    const hd = h("h4");
+    const ic = h("span", "nm-ic " + cls);
+    ic.innerHTML = icon;
+    hd.append(ic, h("span", null, title));
+    bx.append(hd);
+    grid.append(bx);
+    return bx;
+  };
+  const list = (items) => { const ul = h("ul"); items.forEach((x) => ul.append(h("li", null, x))); return ul; };
+  const b1 = box("o", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg>', t.doT);
+  b1.append(h("p", "strong", pl.strategy), list(pl.focus));
+  const nxt = (f + 1) % 6;
+  const b2 = box("k", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>', t.hPrepare(stageLabel(nxt)));
+  b2.append(list(pl.prepare));
+  b2.append(h("p", "muted", t.reduceT + ": " + pl.reduce.join(lang === "fa" ? "؛ " : "; ")));
+
+  document.getElementById("next-note").textContent = t.nextNote;
+}
+
+function showAssets(onlyFit) {
+  if (onlyFit && liveStageIdx != null && sel !== liveStageIdx) select(liveStageIdx);
+  document.getElementById("watch-only").checked = onlyFit;
+  drawWatch();
+  document.getElementById("watch-sec").scrollIntoView();
+}
+document.getElementById("cta").addEventListener("click", () => showAssets(true));
+document.getElementById("fit-all").addEventListener("click", () => showAssets(false));
+
+function sparkKey() {
+  const t = T[lang];
+  const k = h("div", "spark-key");
+  k.append(h("span", null, t.keyPrice), h("span", "ma", t.keyMa(period)));
+  return k;
+}
+
+function spark(s, up) {
+  const w = 300, hgt = 72, pad = 4;
+  const all = s.price.concat(s.ma);
+  const lo = Math.min(...all), hi = Math.max(...all);
+  const x = (i) => pad + (i / (s.price.length - 1)) * (w - 2 * pad);
+  const y = (v) => pad + (1 - (v - lo) / (hi - lo || 1)) * (hgt - 2 * pad);
+  const line = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join("");
+  const svg = el("svg", { class: "spark", viewBox: `0 0 ${w} ${hgt}`, preserveAspectRatio: "none", role: "img" });
+  const area = line(s.price) + `L${x(s.price.length - 1)} ${hgt}L${x(0)} ${hgt}Z`;
+  svg.append(el("path", { class: "area", d: area, fill: up ? "var(--up-soft)" : "var(--down-soft)", stroke: "none" }));
+  svg.append(el("path", { class: "maline", d: line(s.ma), fill: "none", stroke: "var(--muted)", "stroke-width": 1.5, "stroke-dasharray": "4 3", "vector-effect": "non-scaling-stroke" }));
+  svg.append(el("path", { class: "pline", d: line(s.price), fill: "none", stroke: up ? "var(--up)" : "var(--down)", "stroke-width": 1.75, "vector-effect": "non-scaling-stroke" }));
+  return svg;
+}
+
+function drawChart() {
+  const t = T[lang];
+  const svg = document.getElementById("cycle");
+  svg.replaceChildren();
+  svg.style.fontFamily = lang === "fa" ? "var(--font-fa)" : "var(--font-en)";
+  const A = (o) => Object.assign({ "pointer-events": "none" }, o);
+  const colX = (i) => X0 + i * COL;
+  const midX = (i) => i * COL + COL / 2; // in curve coordinates
+
+  // Clickable stage columns (also keyboard focusable)
+  STAGES.forEach((_, i) => {
+    const g = el("g", { class: "col" + (i === sel ? " sel" : "") + (i === liveStageIdx ? " live" : ""), id: "col-" + i, tabindex: i === sel ? 0 : -1, role: "button", "aria-pressed": String(i === sel), "aria-label": `${stageLabel(i)}: ${t.names[i]}` });
+    g.append(el("rect", { class: "hit", x: colX(i) + 3, y: 2, width: COL - 6, height: H - 4, rx: 14 }));
+    g.addEventListener("click", () => select(i));
+    g.addEventListener("keydown", (e) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      if (step) { e.preventDefault(); select((sel + step + 6) % 6, true); }
+      else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i, true); }
+    });
+    svg.append(g);
+  });
+
+  // Stage headers
+  STAGES.forEach((_, i) => {
+    const cx = colX(i) + COL / 2, on = i === sel, live = i === liveStageIdx;
+    const color = live ? "var(--accent)" : on ? "var(--pick)" : "var(--ink)";
+    svg.append(el("text", A({ x: cx, y: 25, "text-anchor": "middle", "font-size": 13, "font-weight": 800, fill: color }), stageLabel(i) + (live ? ` · ${t.now}` : "")));
+    svg.append(el("text", A({ x: cx, y: 43, "text-anchor": "middle", "font-size": 11.5, "font-weight": on || live ? 700 : 500, fill: on || live ? "var(--ink)" : "var(--muted)" }), t.names[i]));
+  });
+
+  // Shaded contraction / expansion halves, midline, curve
+  let down = `M${X0} ${MID}`, up = `M${X0 + W / 2} ${MID}`;
+  for (let x = 0; x <= W / 2; x += 4) down += `L${X0 + x} ${curveY(x).toFixed(1)}`;
+  for (let x = W / 2; x <= W; x += 4) up += `L${X0 + x} ${curveY(x).toFixed(1)}`;
+  svg.append(el("path", A({ d: down + "Z", fill: "var(--warm-soft)" })));
+  svg.append(el("path", A({ d: up + "Z", fill: "var(--cool-soft)" })));
+  svg.append(el("line", A({ x1: X0, x2: X0 + W, y1: MID, y2: MID, stroke: "var(--dash)", "stroke-width": 1.5, "stroke-dasharray": "4 5" })));
+  let d = "";
+  for (let x = 0; x <= W; x += 3) d += (x ? "L" : "M") + (X0 + x) + " " + curveY(x).toFixed(1);
+  svg.append(el("path", A({ d, fill: "none", stroke: "var(--curve)", "stroke-width": 3, "stroke-linecap": "round" })));
+
+  svg.append(el("text", A({ x: X0 + W * 0.75, y: MID - 12, "text-anchor": "middle", "font-size": 12.5, "font-weight": 700, fill: "var(--half-e-ink)" }), t.expansion));
+  svg.append(el("text", A({ x: X0 + W * 0.25, y: MID + 22, "text-anchor": "middle", "font-size": 12.5, "font-weight": 700, fill: "var(--half-c-ink)" }), t.contraction));
+  svg.append(el("text", A({ x: X0 + W * 0.75, y: MID - AMP + 20, "text-anchor": "middle", "font-size": 11.5, "font-weight": 600, fill: "var(--muted)" }), t.peak));
+  svg.append(el("text", A({ x: X0 + W * 0.25, y: MID + AMP - 10, "text-anchor": "middle", "font-size": 11.5, "font-weight": 600, fill: "var(--muted)" }), t.trough));
+
+  // Selected-stage marker, sliding along the curve
+  if (liveStageIdx != null && sel !== liveStageIdx) {
+    const lx = midX(liveStageIdx);
+    svg.append(el("circle", A({ cx: X0 + lx, cy: curveY(lx), r: 8, fill: "var(--surface)", stroke: "var(--accent)", "stroke-width": 3 })));
+  }
+  const dot = el("circle", A({ r: 7, fill: sel === liveStageIdx ? "var(--accent)" : "var(--pick)", stroke: "var(--surface)", "stroke-width": 3 }));
+  svg.append(dot);
+  const place = (x) => { dot.setAttribute("cx", X0 + x); dot.setAttribute("cy", curveY(x)); };
+  const target = midX(sel), from = dotX ?? target;
+  dotX = target;
+  if (from === target || matchMedia("(prefers-reduced-motion: reduce)").matches) place(target);
+  else {
+    const t0 = performance.now();
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / 450), e = 1 - Math.pow(1 - k, 3);
+      place(from + (target - from) * e);
+      if (k < 1) requestAnimationFrame(step);
+    };
+    place(from);
+    requestAnimationFrame(step);
+  }
+
+  // Moving-average markers: where each average puts the market
+  const byStage = {}, mixed = [];
+  if (ALL) PERIOD_KEYS.forEach((p) => {
+    const s = pd(p) && pd(p).stage;
+    if (s) (byStage[s - 1] = byStage[s - 1] || []).push(p);
+    else if (pd(p)) mixed.push(p);
+  });
+  Object.entries(byStage).forEach(([key, ps]) => {
+    const i = +key;
+    const rows = ps.length > 2 ? [ps.slice(0, 2), ps.slice(2)] : [ps];
+    rows.forEach((row, r) => {
+      const widths = row.map((p) => 14 + t.periodShort(p).length * 6.4);
+      const total = widths.reduce((a, b) => a + b, 0) + (row.length - 1) * 4;
+      const x0 = midX(i) - total / 2;
+      let x = X0 + x0;
+      // Keep tags clear of the sloped curve: outside the shaded area when there is room
+      let lo = Infinity, hi = -Infinity;
+      for (let sx = x0 - 4; sx <= x0 + total + 4; sx += 4) { const yy = curveY(sx); lo = Math.min(lo, yy); hi = Math.max(hi, yy); }
+      const need = rows.length * 22;
+      const below = i < 3 ? STRIP - (hi + 6) >= need : !(lo - 6 - need >= 50);
+      const y = below ? hi + 6 + r * 22 : lo - 24 - r * 22;
+      row.forEach((p, k) => {
+        const on = p === period, w = widths[k];
+        svg.append(el("rect", A({ x, y, width: w, height: 18, rx: 9, fill: on ? "var(--accent)" : "var(--surface)", stroke: "var(--accent)", "stroke-width": 1.2 })));
+        svg.append(el("text", A({ x: x + w / 2, y: y + 13, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: on ? "#fff" : "var(--accent)" }), t.periodShort(p)));
+        x += w + 4;
+      });
+    });
+  });
+
+  // Asset signal strip: one row per asset, outlined where it changes direction
+  ASSETS.forEach((a, r) => {
+    const y = STRIP + r * 40;
+    svg.append(el("text", A({ x: X0 - 12, y: y + 22, "text-anchor": "end", "font-size": 12.5, "font-weight": 700, fill: "var(--ink)" }), t.assets[a]));
+    STAGES.forEach((s, i) => {
+      const upA = s[a] > 0, turn = STAGES[(i + 5) % 6][a] !== s[a];
+      const x = colX(i) + 8, w = COL - 16;
+      svg.append(el("rect", A({ x, y: y + 4, width: w, height: 28, rx: 9, fill: upA ? "var(--up-soft)" : "var(--down-soft)", stroke: turn ? (upA ? "var(--up)" : "var(--down)") : "none", "stroke-width": 1.6 })));
+      svg.append(el("text", A({ x: x + w / 2, y: y + 23, "text-anchor": "middle", "font-size": 14, "font-weight": 800, fill: upA ? "var(--up)" : "var(--down)" }), upA ? "↑" : "↓"));
+    });
+  });
+
+  // Legend under the chart
+  const lg = document.getElementById("cycle-legend");
+  lg.replaceChildren();
+  const item = (cls, label) => { const s = h("span"); s.append(h("i", cls), document.createTextNode(label)); lg.append(s); };
+  item("lg-now", t.legNowStage);
+  item("lg-pick", t.legPick);
+  item("lg-pill", t.maLegend);
+  item("lg-cell", t.turnLegend);
+  mixed.forEach((p) => lg.append(h("span", "lg-mixed", t.mixedNote(p))));
+}
+
+function drawDetail() {
+  const t = T[lang], s = STAGES[sel];
+  const tile = document.getElementById("d-tile");
+  tile.textContent = t.num(sel + 1);
+  tile.classList.toggle("pick", sel !== liveStageIdx);
+  document.getElementById("d-num").textContent = stageLabel(sel) + (sel === liveStageIdx ? ` · ${t.now}` : "");
+  document.getElementById("d-name").textContent = t.names[sel];
+  document.getElementById("d-desc").textContent = t.desc[sel];
+  const box = document.getElementById("d-assets");
+  box.replaceChildren();
+  ASSETS.forEach((a) => {
+    const div = h("div", "asset " + (s[a] > 0 ? "up" : "down"));
+    div.append(h("span", "name", t.assets[a]), h("span", "dir", s[a] > 0 ? "↑ " + t.rising : "↓ " + t.falling));
+    box.append(div);
+  });
+  const ul = document.getElementById("d-macro");
+  ul.replaceChildren();
+  t.macroLabels.forEach((lbl, k) => {
+    const li = h("li");
+    li.append(h("b", null, lbl), document.createTextNode(": " + t.macro[sel][k]));
+    ul.append(li);
+  });
+
+  const rec = document.getElementById("d-rec");
+  const pl = t.plan[sel];
+  rec.replaceChildren(h("h4", null, t.hStrategy), h("p", "strat", pl.strategy), h("p", null, t.rec[sel]));
+  const tilt = h("div", "tilt");
+  ["cash", "bonds", "stocks", "commodities"].forEach((a) => {
+    const lv = TILT[sel][a];
+    const d = h("div", lv);
+    d.append(h("span", null, t.tiltAssets[a]), h("span", "lv", t.tiltLv[lv]));
+    tilt.append(d);
+  });
+  rec.append(tilt);
+
+  const lists = h("div", "plan");
+  [[t.hFocus, pl.focus, "add"], [t.hReduce, pl.reduce, "cut"]].forEach(([title, items, cls]) => {
+    const col = h("div", "plan-col " + cls);
+    const ul = h("ul");
+    items.forEach((x) => ul.append(h("li", null, x)));
+    col.append(h("h4", null, title), ul);
+    lists.append(col);
+  });
+  rec.append(lists);
+
+  // Preparing for the next stage, plus the price signal that marks it
+  const nxt = (sel + 1) % 6;
+  const prep = h("div", "prep");
+  const ol = h("ol");
+  pl.prepare.forEach((x) => ol.append(h("li", null, x)));
+  prep.append(h("h4", null, t.hPrepare(stageLabel(nxt))), ol);
+  const flip = ASSETS.find((a) => STAGES[nxt][a] !== STAGES[sel][a]);
+  const turnsUp = STAGES[nxt][flip] > 0;
+  const sig = h("div", "signal");
+  sig.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  const sigTxt = h("div");
+  sigTxt.append(h("b", null, t.hSignal), h("span", null, t.signal(stageLabel(nxt), t.assets[flip], turnsUp, period)));
+  if (DATA && sel === liveStageIdx) {
+    const d = DATA.assets[flip];
+    sigTxt.append(h("span", "now", t.signalNow(d.symbol, t.fmt(Math.abs(d.gap)), d.gap > 0)));
+  }
+  sig.append(sigTxt);
+  prep.append(sig);
+  rec.append(prep);
+  const strong = WATCH.filter((w) => w.stages.includes(sel + 1));
+  if (strong.length) {
+    const chips = h("div", "chips");
+    strong.forEach((w) => {
+      const dir = w.error ? 0 : wp(w).dir;
+      const c = h("span", "chip" + (dir > 0 ? " up" : dir < 0 ? " down" : ""), w.symbol + (dir > 0 ? " ↑" : dir < 0 ? " ↓" : ""));
+      c.title = w[lang];
+      chips.append(c);
+    });
+    rec.append(h("h4", null, t.strongHere), chips, h("p", "hint", t.chipsHint));
+  }
+
+  // What the backtest says about this stage
+  const bt = btData();
+  if (bt) {
+    const ranked = SECTOR_META
+      .map(([sym, en, fa]) => ({ sym, name: lang === "fa" ? fa : en, c: bt.sectors[sym] && bt.sectors[sym][sel + 1] }))
+      .filter((x) => x.c && !x.c.small)
+      .sort((a, b) => b.c.avg - a.c.avg)
+      .slice(0, 3);
+    if (ranked.length) {
+      const chips = h("div", "chips btchips");
+      ranked.forEach((x) => {
+        const c = h("span", "chip " + (x.c.avg >= 0 ? "up" : "down"), `${x.sym} ${fmtPct(x.c.avg)}%`);
+        c.title = `${x.name}: ` + t.tipEx(fmtPct(x.c.avg), t.num(x.c.hit), t.num(x.c.n), t.fmt(x.c.t, 2));
+        chips.append(c);
+      });
+      rec.append(h("h4", null, t.btStage(ym(bt.start), ym(bt.end))), chips);
+    }
+  }
+}
+
+const pct = (v) => (v == null ? "–" : (v > 0 ? "+" : "") + T[lang].fmt(v) + "%");
+const sign = (v) => (v == null ? "" : v >= 0 ? " pos" : " neg");
+
+function drawWatch() {
+  const t = T[lang];
+  const sec = document.getElementById("watch-sec");
+  if (!WATCH.length) { sec.hidden = true; return; }
+  document.getElementById("t-watch").textContent = t.watchTitle;
+  document.getElementById("t-watch-hint").textContent = t.watchHint;
+  document.getElementById("t-watch-only").textContent = t.watchOnly;
+  const only = document.getElementById("watch-only").checked;
+  const tb = document.getElementById("watch");
+  tb.replaceChildren();
+  const head = h("tr");
+  t.cols.forEach((c) => head.append(h("th", null, c)));
+  tb.append(head);
+  let group = null;
+  WATCH.forEach((w) => {
+    const inFavor = w.stages.includes(sel + 1);
+    if (only && !inFavor) return;
+    if (w.group !== group) {
+      group = w.group;
+      const gr = h("tr", "group");
+      const td = h("td", null, t.groups[group] || group);
+      td.colSpan = t.cols.length;
+      gr.append(td);
+      tb.append(gr);
+    }
+    const tr = h("tr", inFavor ? "fit" : "");
+    const name = h("td");
+    name.append(h("span", null, w[lang] + " "), h("span", "sym mono", w.symbol));
+    const st = h("span", "st");
+    for (let i = 1; i <= 6; i++) st.append(h("span", (w.stages.includes(i) ? "on" : "") + (i === sel + 1 ? " cur" : ""), t.num(i)));
+    const stTd = h("td");
+    stTd.append(st);
+    tr.append(name, stTd);
+    if (w.error) {
+      const td = h("td", "fitlbl muted", t.noData);
+      td.colSpan = t.cols.length - 2;
+      tr.append(td);
+      tb.append(tr);
+      return;
+    }
+    const p = wp(w);
+    const up = p.dir > 0;
+    const trendTd = h("td");
+    trendTd.append(h("span", "pill " + (up ? "up" : "down"), (up ? "↑ " + t.rising : "↓ " + t.falling)));
+    const [key, cls] = inFavor ? (up ? ["good", "good"] : ["warn", "warn"]) : (up ? ["off", "muted"] : ["out", "muted"]);
+    tr.append(
+      trendTd,
+      h("td", "num" + sign(p.gap), pct(p.gap)),
+      h("td", "num" + sign(w.ret.m3), pct(w.ret.m3)),
+      h("td", "num" + sign(w.ret.m12), pct(w.ret.m12)),
+      h("td", "fitlbl " + cls, t.fit[key]),
+    );
+    tb.append(tr);
+  });
+}
+document.getElementById("watch-only").addEventListener("change", drawWatch);
+
+// ---- Sector rotation chart + backtest ----
+// [ticker, English short name, Persian short name, stage the textbook rotation chart puts it in]
+const SECTOR_META = [
+  ["XLK", "Tech", "فناوری", 1],
+  ["XLY", "Discretionary", "غیرضروری", 1],
+  ["XLC", "Comm. services", "ارتباطات", 2],
+  ["XLI", "Industrials", "صنعتی", 2],
+  ["XLB", "Materials", "مواد اولیه", 3],
+  ["XLE", "Energy", "انرژی", 3],
+  ["XLP", "Staples", "ضروری", 4],
+  ["XLV", "Health care", "سلامت", 5],
+  ["XLU", "Utilities", "خدمات عمومی", 5],
+  ["XLF", "Financials", "مالی", 6],
+  ["XLRE", "Real estate", "املاک", 6],
+];
+const CLASS_KEYS = ["bonds", "stocks", "commodities", "gold", "cash"];
+let btMode = "data";
+const btData = () => {
+  const B = ALL && ALL.backtest;
+  return B ? B.periods[PK(period)] || B.periods[period] : null;
+};
+// Stage with the highest average; ignore small samples unless nothing else exists
+function bestStage(cells) {
+  if (!cells) return null;
+  const pick = (allowSmall) => {
+    let best = null;
+    for (let s = 1; s <= 6; s++) {
+      const c = cells[s];
+      if (!c || (c.small && !allowSmall)) continue;
+      if (best == null || c.avg > cells[best].avg) best = s;
+    }
+    return best;
+  };
+  return pick(false) ?? pick(true);
+}
+const stageDist = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 6 - d); };
+const fmtPct = (v) => (v > 0 ? "+" : "") + T[lang].fmt(v, 1);
+const ym = (s) => (s ? (lang === "fa" ? Number(s.slice(0, 4)).toLocaleString("fa-IR", { useGrouping: false }) : s.slice(0, 4)) : "");
+
+function drawRotation(bt) {
+  const t = T[lang];
+  const svg = document.getElementById("rot");
+  svg.replaceChildren();
+  svg.style.fontFamily = lang === "fa" ? "var(--font-fa)" : "var(--font-en)";
+  const RW = 720, RX = 100, RC = RW / 6, RM = 222, RA = 64, LEAD = 150;
+  const econY = (x) => RM + RA * Math.sin((2 * Math.PI * x) / RW);
+  const mktY = (x) => RM + RA * Math.sin((2 * Math.PI * (x + LEAD)) / RW);
+  const A = (o) => Object.assign({ "pointer-events": "none" }, o);
+
+  STAGES.forEach((_, i) => {
+    const g = el("g", { class: "col" + (i === sel ? " sel" : "") + (i === liveStageIdx ? " live" : ""), role: "button", tabindex: -1, "aria-label": `${stageLabel(i)}: ${t.names[i]}` });
+    g.append(el("rect", { class: "hit", x: RX + i * RC + 3, y: 2, width: RC - 6, height: 396, rx: 14 }));
+    g.addEventListener("click", () => select(i));
+    svg.append(g);
+  });
+
+  // Sector labels stacked over the stage where they belong (textbook or backtest)
+  const stacks = {};
+  SECTOR_META.forEach(([sym, en, fa, tb]) => {
+    const cells = bt && bt.sectors[sym];
+    const s = btMode === "tb" ? tb : bestStage(cells);
+    if (!s) return;
+    const c = cells && cells[s];
+    if (btMode === "data" && (!c || c.avg <= 0)) return; // never beat the market in any stage
+    (stacks[s] = stacks[s] || []).push({ label: lang === "fa" ? fa : en, c });
+  });
+  svg.append(el("text", A({ x: RX - 12, y: 30, "text-anchor": "end", "font-size": 12.5, "font-weight": 700, fill: "var(--ink)" }), t.sectorsLbl));
+  Object.entries(stacks).forEach(([s, items]) => {
+    if (btMode === "data") items.sort((a, b) => (b.c ? b.c.avg : 0) - (a.c ? a.c.avg : 0));
+    items.forEach((it, k) => {
+      const strong = btMode === "data" && it.c && Math.abs(it.c.t) >= 2 && !it.c.small;
+      // ⁦…⁩ keeps the signed number left-to-right inside Persian text
+      const txt = btMode === "data" && it.c ? `${it.label} ⁦${fmtPct(it.c.avg)}⁩` : it.label;
+      svg.append(el("text", A({
+        x: RX + (s - 1) * RC + RC / 2, y: 30 + k * 19, "text-anchor": "middle", "font-size": 11.5,
+        "font-weight": btMode === "tb" || strong ? 800 : 600,
+        fill: btMode === "tb" ? "var(--ink)" : strong ? "var(--ink)" : "var(--muted)",
+        direction: t.dir,
+      }), txt));
+    });
+  });
+
+  // Curves: economy (purple) and stock market (orange, leading)
+  const area = (fy) => {
+    let d = `M${RX} ${RM}`;
+    for (let x = 0; x <= RW; x += 4) d += `L${RX + x} ${fy(x).toFixed(1)}`;
+    return d + `L${RX + RW} ${RM}Z`;
+  };
+  const line = (fy) => {
+    let d = "";
+    for (let x = 0; x <= RW; x += 3) d += (x ? "L" : "M") + (RX + x) + " " + fy(x).toFixed(1);
+    return d;
+  };
+  svg.append(el("path", A({ d: area(mktY), fill: "var(--warm-soft)" })));
+  svg.append(el("path", A({ d: area(econY), fill: "var(--cool-soft)" })));
+  svg.append(el("line", A({ x1: RX, x2: RX + RW, y1: RM, y2: RM, stroke: "var(--dash)", "stroke-width": 1.5, "stroke-dasharray": "4 5" })));
+  svg.append(el("path", A({ d: line(mktY), fill: "none", stroke: "var(--accent)", "stroke-width": 3, "stroke-linecap": "round" })));
+  svg.append(el("path", A({ d: line(econY), fill: "none", stroke: "var(--curve)", "stroke-width": 3, "stroke-linecap": "round" })));
+
+  // Phase bands
+  const band = (y, edges, labels, fill, ink, title) => {
+    svg.append(el("text", A({ x: RX - 12, y: y + 19, "text-anchor": "end", "font-size": 12.5, "font-weight": 700, fill: "var(--ink)" }), title));
+    labels.forEach((lb, k) => {
+      const x0 = RX + edges[k] * RC, x1 = RX + edges[k + 1] * RC;
+      svg.append(el("rect", A({ x: x0 + 2, y, width: x1 - x0 - 4, height: 28, rx: 9, fill })));
+      svg.append(el("text", A({ x: (x0 + x1) / 2, y: y + 19, "text-anchor": "middle", "font-size": 12, "font-weight": 700, fill: ink, direction: t.dir }), lb));
+    });
+  };
+  band(312, [0, 1.5, 3, 4.5, 6], t.econPhases, "var(--sel)", "var(--blue)", t.econ);
+  band(346, [0, 1, 2.75, 3.75, 6], t.mktPhases, "var(--accent-soft)", "var(--accent)", t.market);
+
+  STAGES.forEach((_, i) => {
+    const on = i === sel, live = i === liveStageIdx;
+    svg.append(el("text", A({ x: RX + i * RC + RC / 2, y: 392, "text-anchor": "middle", "font-size": 12, "font-weight": on || live ? 800 : 600, fill: live ? "var(--accent)" : on ? "var(--pick)" : "var(--muted)" }), stageLabel(i)));
+  });
+
+  const lg = document.getElementById("rot-legend");
+  lg.replaceChildren();
+  [["var(--curve)", t.econ], ["var(--accent)", t.market]].forEach(([c, label]) => {
+    const s = h("span");
+    const i = h("i");
+    i.style.borderTopColor = c;
+    s.append(i, document.createTextNode(label));
+    lg.append(s);
+  });
+  if (btMode === "data") lg.append(h("span", null, t.rotDataNote));
+}
+
+function heatCell(c, excess, claim) {
+  const t = T[lang];
+  if (!c) return h("td", "hc none", "–");
+  const strength = Math.min(Math.abs(c.avg) / 20, 1);
+  const td = h("td", "hc" + (Math.abs(c.t) >= 2 && !c.small ? " sig" : "") + (c.small ? " small" : "") + (claim ? " claim" : ""), fmtPct(c.avg));
+  td.style.background = `color-mix(in srgb, ${c.avg >= 0 ? "var(--up)" : "var(--down)"} ${Math.round(6 + strength * 40)}%, transparent)`;
+  td.title = (excess ? t.tipEx : t.tipAbs)(fmtPct(c.avg), t.num(c.hit), t.num(c.n), t.fmt(c.t, 2));
+  return td;
+}
+
+function heatHead(bt, firstCol, extra) {
+  const t = T[lang];
+  const tr = h("tr");
+  tr.append(h("th", null, firstCol));
+  STAGES.forEach((_, i) => {
+    const th = h("th", i === sel ? "on" : "", stageLabel(i));
+    th.append(h("small", null, t.monthsN(t.num(bt.counts[i + 1] || 0))));
+    tr.append(th);
+  });
+  extra.forEach((x) => tr.append(h("th", null, x)));
+  return tr;
+}
+
+function drawBacktest() {
+  const t = T[lang];
+  const sec = document.getElementById("bt-sec");
+  const bt = btData();
+  if (!bt) { sec.hidden = true; return; }
+  sec.hidden = false;
+  document.getElementById("t-bt").textContent = t.btTitle;
+  document.getElementById("t-bt-kicker").textContent = t.btKicker;
+  const mode = document.getElementById("bt-mode");
+  mode.replaceChildren();
+  [["data", t.btModeData], ["tb", t.btModeTb]].forEach(([k, label]) => {
+    const b = h("button", null, label);
+    b.type = "button"; b.id = "bt-mode-" + k;
+    b.setAttribute("aria-pressed", String(btMode === k));
+    b.addEventListener("click", () => { btMode = k; drawBacktest(); document.getElementById("bt-mode-" + k).focus(); });
+    mode.append(b);
+  });
+  drawRotation(bt);
+
+  const total = Object.values(bt.counts).reduce((a, b) => a + b, 0);
+  document.getElementById("t-bt-sec").textContent = t.btSecTitle;
+  document.getElementById("bt-intro").textContent =
+    t.btIntro(ym(bt.start), ym(bt.end), t.num(total), t.num(+period)) + " " + t.mixedOut(t.num(bt.mixed));
+
+  // Sector heatmap with textbook-vs-data comparison
+  const tb = document.getElementById("heat-sec");
+  tb.replaceChildren(heatHead(bt, t.colSector, [t.colBest, t.colChart, t.colAgree, t.colStable]));
+  let stableYes = 0, stableN = 0;
+  const tally = { yes: 0, near: 0, no: 0 };
+  let counted = 0;
+  SECTOR_META.forEach(([sym, en, fa, chartStage]) => {
+    const cells = bt.sectors[sym];
+    const tr = h("tr");
+    const lbl = h("td", "lbl");
+    lbl.append(document.createTextNode((lang === "fa" ? fa : en) + " "), h("span", "sym", sym));
+    tr.append(lbl);
+    for (let s = 1; s <= 6; s++) tr.append(heatCell(cells && cells[s], true, s === chartStage));
+    const best = bestStage(cells);
+    tr.append(h("td", "num", best ? t.num(best) : "–"), h("td", "num", t.num(chartStage)));
+    if (best) {
+      const d = stageDist(best, chartStage);
+      const k = d === 0 ? "yes" : d === 1 ? "near" : "no";
+      tally[k]++; counted++;
+      tr.append(h("td", "agree " + k, t.agreeLbl[k]));
+    } else tr.append(h("td", null, "–"));
+    // Stability: best stage in 1993-2009 vs. 2010-today
+    const ba = bt.halves ? bestStage(bt.halves.a[sym]) : null;
+    const bb = bt.halves ? bestStage(bt.halves.b[sym]) : null;
+    if (ba && bb) {
+      const d = stageDist(ba, bb);
+      const k = d === 0 ? "yes" : d === 1 ? "near" : "no";
+      if (d <= 1) stableYes++;
+      stableN++;
+      const td = h("td", "agree " + k, t.agreeLbl[k]);
+      td.title = t.stableTip(t.num(ba), t.num(bb));
+      tr.append(td);
+    } else tr.append(h("td", null, "–"));
+    tb.append(tr);
+  });
+  document.getElementById("t-heat-hint").textContent = t.heatHint;
+  document.getElementById("bt-verdict").textContent = t.verdict(t.num(tally.yes), t.num(tally.near), t.num(counted))
+    + (stableN ? t.stableVerdict(t.num(stableYes), t.num(stableN)) : "");
+
+  // Asset-class heatmap, outlined where Pring's model says overweight
+  document.getElementById("t-bt-cls").textContent = t.btClsTitle;
+  const tc = document.getElementById("heat-cls");
+  tc.replaceChildren(heatHead(bt, t.colAsset, []));
+  CLASS_KEYS.forEach((k) => {
+    const cells = bt.classes[k];
+    if (!cells) return;
+    const tr = h("tr");
+    tr.append(h("td", "lbl", t.classNames[k]));
+    for (let s = 1; s <= 6; s++) tr.append(heatCell(cells[s], false, TILT[s - 1][k] === "ow"));
+    tc.append(tr);
+  });
+  document.getElementById("t-cls-hint").textContent = t.clsHint;
+  document.getElementById("bt-note").textContent = t.btNote;
+}
+
+function drawChecker() {
+  const t = T[lang];
+  const rows = document.getElementById("check-rows");
+  rows.replaceChildren();
+  ASSETS.forEach((a) => {
+    const row = h("div", "row");
+    const seg = h("div", "seg");
+    seg.setAttribute("role", "group"); seg.setAttribute("aria-label", t.assets[a]);
+    [[1, "up", "↑ " + t.rising], [-1, "down", "↓ " + t.falling]].forEach(([v, cls, txt]) => {
+      const b = h("button", cls, txt);
+      b.type = "button"; b.id = `trend-${a}-${cls}`;
+      b.setAttribute("aria-pressed", String(trend[a] === v));
+      b.addEventListener("click", () => { trend[a] = v; drawChecker(); });
+      seg.append(b);
+    });
+    row.append(h("span", null, t.assets[a]), seg);
+    rows.append(row);
+  });
+
+  const res = document.getElementById("result");
+  res.replaceChildren();
+  const p = h("p");
+  const go = h("div", "go");
+  const exact = STAGES.findIndex((s) => ASSETS.every((a) => s[a] === trend[a]));
+  let targets;
+  if (exact >= 0) {
+    p.textContent = t.match(stageLabel(exact) + " (" + t.names[exact] + ")");
+    targets = [exact];
+  } else {
+    p.textContent = t.mixed;
+    targets = STAGES.map((s, i) => [i, ASSETS.filter((a) => s[a] !== trend[a]).length]).filter(([, d]) => d === 1).map(([i]) => i);
+  }
+  targets.forEach((i) => {
+    const b = h("button", null, t.open(stageLabel(i)));
+    b.type = "button";
+    b.addEventListener("click", () => select(i));
+    go.append(b);
+  });
+  const live = liveTrend();
+  if (DATA && ASSETS.some((a) => trend[a] !== live[a])) {
+    const r = h("button", null, t.reset);
+    r.type = "button";
+    r.addEventListener("click", () => { trend = liveTrend(); drawChecker(); });
+    go.append(r);
+  }
+  res.append(p, go);
+}
+
+function drawHistory() {
+  const t = T[lang];
+  const sec = document.getElementById("hist").closest("section");
+  if (!DATA || !DATA.history.length) { sec.hidden = true; return; }
+  document.getElementById("t-hist").textContent = t.hist(period);
+  const grid = document.getElementById("hist");
+  grid.replaceChildren();
+  grid.append(h("span"));
+  for (let m = 1; m <= 12; m++) grid.append(h("span", "mh", String(m)));
+  const byMonth = Object.fromEntries(DATA.history.map((r) => [r.month, r]));
+  const years = [...new Set(DATA.history.map((r) => r.month.slice(0, 4)))];
+  const last = DATA.history[DATA.history.length - 1].month;
+  years.forEach((y) => {
+    grid.append(h("span", "yr", y));
+    for (let m = 1; m <= 12; m++) {
+      const key = `${y}-${String(m).padStart(2, "0")}`;
+      const r = byMonth[key];
+      if (!r) { grid.append(h("span", "cell empty")); continue; }
+      const cls = r.stage ? (r.stage <= 3 ? "c" : "e") : "m";
+      const b = h("button", "cell " + cls + (key === last ? " now" : ""), r.stage ? t.num(r.stage) : "–");
+      b.type = "button";
+      const dirs = ASSETS.map((a, k) => `${t.assets[a]} ${r.dirs[k] > 0 ? "↑" : "↓"}`).join(" · ");
+      b.title = `${key}: ${r.stage ? stageLabel(r.stage - 1) : t.legM} — ${dirs}`;
+      if (r.stage) b.addEventListener("click", () => select(r.stage - 1));
+      else b.disabled = true;
+      grid.append(b);
+    }
+  });
+  const leg = document.getElementById("legend");
+  leg.replaceChildren();
+  [["var(--warm-soft)", t.legC], ["var(--cool-soft)", t.legE], ["transparent", t.legM]].forEach(([c, txt]) => {
+    const s = h("span");
+    const i = h("i");
+    i.style.background = c;
+    if (c === "transparent") i.style.border = "1px dashed var(--line)";
+    s.append(i, document.createTextNode(txt));
+    leg.append(s);
+  });
+  const n = h("span");
+  const i = h("i");
+  i.style.outline = "2px solid var(--accent)";
+  n.append(i, document.createTextNode(t.legNow));
+  leg.append(n);
+}
+
+function drawMatrix() {
+  const t = T[lang];
+  const tb = document.getElementById("matrix");
+  tb.replaceChildren();
+  const head = h("tr");
+  head.append(h("th"));
+  STAGES.forEach((_, i) => head.append(h("th", i === sel ? "on" : "", stageLabel(i))));
+  tb.append(head);
+  ASSETS.forEach((a) => {
+    const tr = h("tr");
+    tr.append(h("td", "asset-name", t.assets[a]));
+    STAGES.forEach((s, i) => {
+      const td = h("td", (s[a] > 0 ? "u" : "d") + (i === sel ? " on" : ""), s[a] > 0 ? "↑" : "↓");
+      td.setAttribute("aria-label", s[a] > 0 ? t.rising : t.falling);
+      tr.append(td);
+    });
+    tb.append(tr);
+  });
+}
+
+// ---- Economic check (FRED) ----
+const ECON_KEYS = ["curve", "unemployment", "credit", "production"];
+const stageSide = (s) => (s == null ? null : [3, 4, 5].includes(s) ? "exp" : "con");
+const scoreSide = (score) => (score >= 2 ? "exp" : score <= -2 ? "con" : null);
+const signed = (v, d = 2) => (v > 0 ? "+" : v < 0 ? "−" : "") + T[lang].fmt(Math.abs(v), d);
+
+function miniLine(values, zero) {
+  const w = 300, hh = 54, pad = 4;
+  let lo = Math.min(...values), hi = Math.max(...values);
+  if (zero != null) { lo = Math.min(lo, zero); hi = Math.max(hi, zero); }
+  const x = (i) => pad + (i / Math.max(values.length - 1, 1)) * (w - 2 * pad);
+  const y = (v) => pad + (1 - (v - lo) / (hi - lo || 1)) * (hh - 2 * pad);
+  const svg = el("svg", { class: "mini", viewBox: `0 0 ${w} ${hh}`, preserveAspectRatio: "none", "aria-hidden": "true" });
+  if (zero != null) svg.append(el("line", { x1: 0, x2: w, y1: y(zero), y2: y(zero), stroke: "var(--dash)", "stroke-dasharray": "3 3", "vector-effect": "non-scaling-stroke" }));
+  svg.append(el("path", { d: values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(""), fill: "none", stroke: "var(--blue)", "stroke-width": 2, "vector-effect": "non-scaling-stroke" }));
+  return svg;
+}
+
+function econAgree() {
+  const M = ALL && ALL.macro;
+  if (!M) return null;
+  const side = scoreSide(M.score);
+  const st = liveStageIdx != null ? liveStageIdx + 1 : null;
+  if (!side || st == null) return { M, side, agree: null };
+  return { M, side, agree: side === stageSide(st) };
+}
+
+function drawEcon() {
+  const t = T[lang];
+  const sec = document.getElementById("econ-sec");
+  const M = ALL && ALL.macro;
+  if (!M) { sec.hidden = true; return; }
+  sec.hidden = false;
+  document.getElementById("t-econ").textContent = t.econTitle;
+  document.getElementById("t-econ-kicker").textContent = (M.stale ? t.econStale + " " : "") + t.econKicker;
+  const sc = document.getElementById("econ-score");
+  sc.className = "conv " + (M.score >= 2 ? "high" : M.score <= -2 ? "low" : "mid");
+  sc.textContent = t.econScore(signed(M.score, 0));
+
+  const grid = document.getElementById("econ-grid");
+  grid.replaceChildren();
+  ECON_KEYS.forEach((k) => {
+    const ind = M.indicators[k];
+    if (!ind) return;
+    const b = h("div", "nm-box");
+    b.append(h("h4", null, t.econNames[k]));
+    const unit = k === "production" ? "" : "%";
+    b.append(h("div", "val", t.fmt(ind.value, k === "production" ? 1 : 2) + unit));
+    b.append(h("span", "vote " + (ind.vote > 0 ? "p" : ind.vote < 0 ? "n" : "z"), t.econVote[String(ind.vote)]));
+    let detail = "";
+    if (k === "curve") detail = t.econDetail.curve(ind.value);
+    else if (k === "unemployment") detail = t.econDetail.unemployment(t.fmt(ind.detail, 2));
+    else if (k === "credit") detail = t.econDetail.credit(t.fmt(Math.abs(ind.detail), 2), ind.detail > 0);
+    else detail = t.econDetail.production(signed(ind.detail));
+    b.append(h("p", null, detail));
+    const sp = M.spark && M.spark[k];
+    if (sp && sp.values.length > 1) b.append(miniLine(sp.values, k === "curve" ? 0 : null));
+    b.append(h("p", "muted num", `${ind.series} · ${t.date(ind.date)}`));
+    grid.append(b);
+  });
+
+  const ea = econAgree();
+  const st = liveStageIdx != null ? liveStageIdx + 1 : null;
+  document.getElementById("econ-verdict").textContent = t.econVerdict(
+    signed(M.score, 0), ea.side ? t.econSide[ea.side] : "", st ? stageLabel(st - 1) : t.statMixed, ea.agree);
+
+  document.getElementById("t-econ-hist").textContent = t.econHist;
+  const bars = document.getElementById("econ-bars");
+  bars.replaceChildren();
+  (M.history || []).forEach((r) => {
+    const s = h("span");
+    const mag = Math.abs(r.score);
+    s.style.height = `${8 + mag * 13}px`;
+    s.style.background = r.score > 0 ? "var(--up)" : r.score < 0 ? "var(--down)" : "var(--dash)";
+    s.style.alignSelf = "center";
+    s.title = `${r.month}: ${signed(r.score, 0)}`;
+    bars.append(s);
+  });
+  document.getElementById("econ-note").textContent = t.econNote;
+}
+
+// ---- Strategy test ----
+const STRAT_KEYS = ["pring", "trend", "spy", "sixty", "equal"];
+const STRAT_COLORS = { pring: "var(--accent)", trend: "var(--blue)", spy: "var(--ink)", sixty: "var(--teal)", equal: "var(--muted)" };
+const yr = (s) => (lang === "fa" ? Number(s.slice(0, 4)).toLocaleString("fa-IR", { useGrouping: false }) : s.slice(0, 4));
+
+function drawEquity(S) {
+  const t = T[lang];
+  const svg = document.getElementById("equity");
+  svg.replaceChildren();
+  svg.style.fontFamily = lang === "fa" ? "var(--font-fa)" : "var(--font-en)";
+  const L = 70, R = 800, TOP = 16, BOT = 290;
+  const dates = S.curves.dates;
+  const all = STRAT_KEYS.flatMap((k) => S.curves[k]);
+  const lo = Math.log(Math.min(1, ...all)), hi = Math.log(Math.max(...all));
+  const x = (i) => L + (i / (dates.length - 1)) * (R - L);
+  const y = (v) => BOT - ((Math.log(v) - lo) / (hi - lo || 1)) * (BOT - TOP);
+  // Grid: powers of two, labelled as what $1 grew to
+  for (let g = 1; g <= Math.exp(hi) * 1.01; g *= 2) {
+    svg.append(el("line", { x1: L, x2: R, y1: y(g), y2: y(g), stroke: "var(--line)", "stroke-width": 1 }));
+    svg.append(el("text", { x: L - 8, y: y(g) + 4, "text-anchor": "end", "font-size": 11, fill: "var(--muted)" }, "$" + t.num(g)));
+  }
+  // Year ticks every 5 years
+  dates.forEach((d, i) => {
+    if (d.endsWith("-01") && +d.slice(0, 4) % 5 === 0) {
+      svg.append(el("line", { x1: x(i), x2: x(i), y1: BOT, y2: BOT + 5, stroke: "var(--muted)" }));
+      svg.append(el("text", { x: x(i), y: BOT + 20, "text-anchor": "middle", "font-size": 11, fill: "var(--muted)" }, yr(d)));
+    }
+  });
+  // Shade the stability split
+  const si = dates.findIndex((d) => d >= (ALL.backtest.split || "2010-01"));
+  if (si > 0) svg.append(el("line", { x1: x(si), x2: x(si), y1: TOP, y2: BOT, stroke: "var(--dash)", "stroke-dasharray": "4 4" }));
+  [...STRAT_KEYS].reverse().forEach((k) => {
+    const v = S.curves[k];
+    const d = v.map((val, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(val).toFixed(1)).join("");
+    svg.append(el("path", { d, fill: "none", stroke: STRAT_COLORS[k], "stroke-width": k === "pring" ? 3 : 1.6, "stroke-linejoin": "round", opacity: k === "pring" ? 1 : 0.85 }));
+  });
+  const lg = document.getElementById("equity-legend");
+  lg.replaceChildren();
+  STRAT_KEYS.forEach((k) => {
+    const s = h("span");
+    const i = h("i");
+    i.style.borderTopColor = STRAT_COLORS[k];
+    s.append(i, document.createTextNode(t.stratNames[k]));
+    lg.append(s);
+  });
+}
+
+function statTable(id, cols, rows) {
+  const tb = document.getElementById(id);
+  tb.replaceChildren();
+  const hr = h("tr");
+  cols.forEach((c) => hr.append(h("th", null, c)));
+  tb.append(hr);
+  rows.forEach(([cls, cells]) => {
+    const tr = h("tr", cls);
+    cells.forEach((c, i) => {
+      if (c instanceof Node) { const td = h("td"); td.append(c); tr.append(td); }
+      else tr.append(h("td", i ? "num" : null, c));
+    });
+    tb.append(tr);
+  });
+}
+
+function drawStrategy() {
+  const t = T[lang];
+  const sec = document.getElementById("strat-sec");
+  const bt = btData();
+  const S = bt && bt.strategy;
+  if (!S) { sec.hidden = true; return; }
+  sec.hidden = false;
+  const pctf = (v) => (v == null ? "–" : signed(v, 1) + "%");
+  document.getElementById("t-strat").textContent = t.stratTitle;
+  document.getElementById("t-strat-kicker").textContent = t.stratKicker(t.num(+period), t.ruleOpt[rule]);
+
+  // Weights per stage
+  const wt = document.getElementById("strat-weights");
+  wt.replaceChildren();
+  const hr = h("tr");
+  hr.append(h("th", null, ""));
+  STAGES.forEach((_, i) => hr.append(h("th", i === sel ? "on" : "", stageLabel(i))));
+  wt.append(hr);
+  ["cash", "bonds", "stocks", "commodities"].forEach((a) => {
+    const tr = h("tr");
+    tr.append(h("td", "lbl", t.tiltAssets[a]));
+    S.weights.forEach((w) => {
+      const v = Math.round(w[a] * 100);
+      const td = h("td", null, v ? t.num(v) + "%" : "–");
+      td.style.background = v ? `color-mix(in srgb, var(--blue) ${Math.round(4 + v * 0.35)}%, transparent)` : "";
+      tr.append(td);
+    });
+    wt.append(tr);
+  });
+
+  drawEquity(S);
+
+  const st = S.stats;
+  const P = st.pring, SP = st.spy;
+  const better = P.sharpe > SP.sharpe;
+  const tag = document.getElementById("strat-tag");
+  const tk = better ? "better" : P.mdd > SP.mdd && P.cagr < SP.cagr ? "mixed" : "worse";
+  tag.className = "conv " + (tk === "better" ? "high" : tk === "mixed" ? "mid" : "low");
+  tag.textContent = t.stratTag[tk];
+  document.getElementById("strat-verdict").textContent = t.stratVerdict({
+    cagr: t.fmt(P.cagr, 1), spyCagr: t.fmt(SP.cagr, 1), mdd: t.fmt(P.mdd, 1), spyMdd: t.fmt(SP.mdd, 1),
+    sharpe: t.fmt(P.sharpe, 2), spySharpe: t.fmt(SP.sharpe, 2), sixtySharpe: t.fmt(st.sixty.sharpe, 2),
+    trendBetter: st.trend.sharpe > P.sharpe, trendSharpe: t.fmt(st.trend.sharpe, 2),
+  });
+
+  const swatch = (k) => { const f = document.createDocumentFragment(); const i = h("i", "sw"); i.style.borderTopColor = STRAT_COLORS[k]; f.append(i, document.createTextNode(t.stratNames[k])); return f; };
+  document.getElementById("t-strat-stats").textContent = t.statsTitle(yr(S.start), yr(S.end));
+  statTable("strat-stats", t.statCols, STRAT_KEYS.filter((k) => st[k]).map((k) => [k === "pring" ? "me" : "", [
+    swatch(k), pctf(st[k].cagr), t.fmt(st[k].vol, 1) + "%", t.fmt(st[k].mdd, 1) + "%", t.fmt(st[k].sharpe, 2), "$" + t.fmt(st[k].growth, 2),
+  ]]));
+
+  const split = ALL.backtest.split || "2010-01";
+  const aLbl = `${yr(S.start)}–${yr(String(+split.slice(0, 4) - 1))}`, bLbl = `${yr(split)}–${yr(S.end)}`;
+  document.getElementById("t-strat-halves").textContent = t.halvesTitle;
+  document.getElementById("t-strat-halves-hint").textContent = t.halvesHint(aLbl, bLbl);
+  const HA = S.halves.a, HB = S.halves.b;
+  statTable("strat-halves", t.halvesCols(aLbl, bLbl), STRAT_KEYS.filter((k) => HA[k] && HB[k]).map((k) => [k === "pring" ? "me" : "", [
+    swatch(k), pctf(HA[k].cagr), t.fmt(HA[k].mdd, 1) + "%", pctf(HB[k].cagr), t.fmt(HB[k].mdd, 1) + "%",
+  ]]));
+
+  document.getElementById("t-strat-rules").textContent = t.rulesTitle;
+  document.getElementById("t-strat-rules-hint").textContent = t.rulesHint(t.num(+period));
+  statTable("strat-rules", t.rulesCols, RULE_KEYS.map((r) => {
+    const R = ALL.backtest.periods[PK(period, r)];
+    const s = R && R.strategy;
+    if (!s) return ["", [t.ruleOpt[r], "–", "–", "–", "–"]];
+    const p = s.stats.pring;
+    return [r === rule ? "me" : "", [t.ruleOpt[r], pctf(p.cagr), t.fmt(p.mdd, 1) + "%", t.fmt(p.sharpe, 2), t.num(s.turnover) + "%"]];
+  }));
+  document.getElementById("strat-note").textContent = t.stratNote;
+}
+
+// ---- "What happens next": history of what followed the selected stage ----
+function drawAfter() {
+  const t = T[lang];
+  const sec = document.getElementById("after-sec");
+  const B = ALL && ALL.backtest;
+  const P = B && (B.periods[PK(period)] || B.periods[period]);
+  const A = P && P.after;
+  if (!A) { sec.hidden = true; return; }
+  sec.hidden = false;
+  const escH = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const idx = sel ?? focusIdx();
+  const st = String(idx + 1);
+  const yr = (m) => (lang === "fa" ? Number(m.slice(0, 4)).toLocaleString("fa-IR", { useGrouping: false }) : m.slice(0, 4));
+  const sg = (v) => `<span class="ltr num">${(v > 0 ? "+" : v < 0 ? "−" : "") + t.fmt(Math.abs(v), 1)}%</span>`;
+
+  document.getElementById("t-after").textContent = t.afterT;
+  document.getElementById("t-after-sub").textContent = t.afterSub(stageLabel(idx), yr(P.start || "1994"), yr(P.end || "2026"));
+  document.getElementById("after-pick").innerHTML = STAGES.map((_, i) =>
+    `<button type="button" data-stage="${i}" aria-pressed="${i === idx}" class="${i === liveStageIdx ? "live" : ""}" aria-label="${escH(stageLabel(i))}">${t.num(i + 1)}</button>`).join("");
+
+  // Small-sample warning
+  const months = (P.counts && P.counts[st]) || 0;
+  const eps = (A.durations[st] && A.durations[st].n) || 0;
+  const warn = document.getElementById("after-warn");
+  const small = months < 24 || eps < 3;
+  warn.hidden = !small;
+  warn.textContent = small ? t.afterWarn(t.num(months), t.num(Math.max(eps, liveStageIdx === idx ? 1 : 0))) : "";
+
+  // Returns grid
+  document.getElementById("t-after-ret").textContent = t.afterRetT;
+  const H = A.horizons || [3, 6, 12];
+  let g = t.afterCols.map((c) => `<span class="hd">${escH(c)}</span>`).join("");
+  ["stocks", "bonds", "commodities", "gold"].forEach((k) => {
+    g += `<span class="nm">${escH(t.afterAssets[k])}</span>`;
+    H.forEach((h) => {
+      const c = A.forward[st] && A.forward[st][k] && A.forward[st][k][String(h)];
+      const base = A.forward.all[k] && A.forward.all[k][String(h)];
+      if (!c) { g += `<span class="acell none">${escH(t.afterNone)}</span>`; return; }
+      const better = base ? c.avg - base.avg : 0;
+      g += `<span class="acell${small ? " faded" : ""}"><b class="${c.avg >= 0 ? "pos" : "neg"}">${sg(c.avg)}</b>
+        <small>${escH(t.afterPos(t.num(c.pos)))}</small>
+        ${base ? `<small class="base ${better >= 0 ? "pos" : "neg"}">${t.afterAll("")}${sg(base.avg)}</small>` : ""}</span>`;
+    });
+  });
+  document.getElementById("after-ret").innerHTML = g;
+
+  // Duration + next stage
+  const facts = document.getElementById("after-facts");
+  const D2 = A.durations[st];
+  const Hs = DATA ? DATA.history || [] : [];
+  let since = 0;
+  if (liveStageIdx === idx) for (let i = Hs.length - 1; i >= 0 && Hs[i].stage === idx + 1; i--) since++;
+  let html = `<div class="after-box"><h4>${escH(t.afterDurT)}</h4>`;
+  if (D2) {
+    html += `<p>${escH(t.afterDur(t.fmt(D2.med, D2.med % 1 ? 1 : 0), t.fmt(D2.avg, 1), t.num(D2.n)))}</p>`;
+    const pct = liveStageIdx === idx ? Math.min(100, Math.round((Math.max(since, 1) / Math.max(D2.med, 1)) * 100)) : 0;
+    html += `<div class="meter"><i style="width:${pct}%"></i></div>`;
+  } else html += `<p class="muted">${escH(t.afterNextNone)}</p>`;
+  html += `<p class="muted">${escH(liveStageIdx === idx ? t.afterNow(t.num(Math.max(since, 1))) : t.afterNowOther)}</p></div>`;
+
+  const T2 = A.transitions[st];
+  html += `<div class="after-box"><h4>${escH(t.afterNextT)}</h4>`;
+  if (T2) {
+    const total = Object.values(T2).reduce((x, y) => x + y, 0);
+    Object.entries(T2).sort((x, y) => y[1] - x[1]).forEach(([s2, n]) => {
+      const share = Math.round((n / total) * 100);
+      html += `<div class="nx-row"><span>${escH(stageLabel(+s2 - 1))}</span><div class="nx-bar"><i style="width:${share}%"></i></div><b class="num">${t.num(share)}%</b></div>`;
+    });
+    html += `<p class="muted">${escH(t.afterNextPring(stageLabel((idx + 1) % 6)))}</p>`;
+  } else html += `<p class="muted">${escH(t.afterNextNone)}</p>`;
+  facts.innerHTML = html + "</div>";
+  document.getElementById("after-note").textContent = t.afterNote;
+}
+document.getElementById("after-pick").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-stage]");
+  if (b) { select(+b.dataset.stage); document.querySelector(`#after-pick [data-stage="${b.dataset.stage}"]`).focus(); }
+});
+
+function select(i, focus) {
+  sel = i;
+  drawFrame(); drawNext(); drawAfter(); drawChart(); drawDetail(); drawWatch(); drawBacktest(); drawStrategy(); drawMatrix();
+  if (focus) document.getElementById("col-" + i).focus();
+}
+
+function render() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = t.dir;
+  document.body.classList.toggle("fa", lang === "fa");
+  document.title = t.title;
+  document.getElementById("t-title").textContent = t.title;
+  document.getElementById("t-sub").textContent = t.sub;
+  document.getElementById("t-check").textContent = t.check;
+  document.getElementById("t-hint").textContent = t.hint;
+  document.getElementById("t-matrix").textContent = t.matrix;
+  document.getElementById("t-note").textContent = t.note;
+  document.getElementById("lang-fa").setAttribute("aria-pressed", String(lang === "fa"));
+  document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
+  drawLive(); drawFrame(); drawNext(); drawAfter(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
+}
+
+function setPeriod(p, focusId) {
+  period = p;
+  try { localStorage.setItem("cycle-period", p); } catch (e) {}
+  loadPeriod();
+  sel = liveStageIdx ?? (DATA.nearest.length ? DATA.nearest[0] - 1 : sel);
+  trend = liveTrend();
+  render();
+  if (focusId) document.getElementById(focusId).focus();
+}
+
+function setRule(r) {
+  rule = r;
+  try { localStorage.setItem("cycle-rule2", r); } catch (e) {}
+  loadPeriod();
+  sel = liveStageIdx ?? (DATA.nearest.length ? DATA.nearest[0] - 1 : sel);
+  trend = liveTrend();
+  render();
+  document.getElementById("rule-" + r).focus();
+}
+
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem("cycle-lang", l); } catch (e) {}
+  render();
+}
+document.getElementById("lang-fa").addEventListener("click", () => setLang("fa"));
+document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
+render();
+// Installable app: offline copy when served from the website (not when opened as a local file)
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>

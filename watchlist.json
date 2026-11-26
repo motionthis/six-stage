@@ -1,0 +1,31 @@
+[
+  {"symbol": "TLT",  "group": "bonds",       "stages": [1, 2, 3], "en": "Long-term Treasuries (20+ yr)",     "fa": "اوراق خزانه بلندمدت (۲۰+ سال)"},
+  {"symbol": "IEF",  "group": "bonds",       "stages": [1, 2, 3], "en": "Treasuries 7–10 yr",                "fa": "اوراق خزانه ۷ تا ۱۰ ساله"},
+  {"symbol": "TIP",  "group": "bonds",       "stages": [3, 4, 5], "en": "Inflation-protected bonds (TIPS)",  "fa": "اوراق محافظت‌شده در برابر تورم"},
+  {"symbol": "SHY",  "group": "bonds",       "stages": [5, 6],    "en": "Short-term Treasuries (cash proxy)", "fa": "اوراق خزانه کوتاه‌مدت (جایگزین نقد)"},
+
+  {"symbol": "SPY",  "group": "stocks",      "stages": [2, 3, 4], "en": "S&P 500",                           "fa": "شاخص S&P 500"},
+  {"symbol": "QQQ",  "group": "stocks",      "stages": [2, 3],    "en": "Nasdaq 100 (growth and tech)",      "fa": "نزدک ۱۰۰ (رشد و فناوری)"},
+  {"symbol": "IWM",  "group": "stocks",      "stages": [2, 3],    "en": "Small caps (Russell 2000)",         "fa": "شرکت‌های کوچک (راسل ۲۰۰۰)"},
+
+  {"symbol": "XLF",  "group": "sectors",     "stages": [2, 3],    "en": "Financials",                        "fa": "مالی و بانکی"},
+  {"symbol": "XLY",  "group": "sectors",     "stages": [2, 3],    "en": "Consumer discretionary",            "fa": "کالاهای مصرفی غیرضروری"},
+  {"symbol": "XLK",  "group": "sectors",     "stages": [3, 4],    "en": "Technology",                        "fa": "فناوری"},
+  {"symbol": "XLI",  "group": "sectors",     "stages": [3, 4],    "en": "Industrials",                       "fa": "صنعتی"},
+  {"symbol": "XLB",  "group": "sectors",     "stages": [4, 5],    "en": "Materials",                         "fa": "مواد اولیه"},
+  {"symbol": "XLE",  "group": "sectors",     "stages": [4, 5],    "en": "Energy",                            "fa": "انرژی"},
+  {"symbol": "XLP",  "group": "sectors",     "stages": [5, 6],    "en": "Consumer staples",                  "fa": "کالاهای مصرفی ضروری"},
+  {"symbol": "XLV",  "group": "sectors",     "stages": [5, 6],    "en": "Health care",                       "fa": "سلامت و درمان"},
+  {"symbol": "XLU",  "group": "sectors",     "stages": [6, 1],    "en": "Utilities",                         "fa": "خدمات عمومی (آب، برق، گاز)"},
+  {"symbol": "XLC",  "group": "sectors",     "stages": [2, 3],    "en": "Communication services",            "fa": "خدمات ارتباطی"},
+  {"symbol": "XLRE", "group": "sectors",     "stages": [6, 1],    "en": "Real estate",                       "fa": "املاک و مستغلات"},
+
+  {"symbol": "GLD",  "group": "metals",      "stages": [1, 2, 3], "en": "Gold",                              "fa": "طلا"},
+  {"symbol": "SLV",  "group": "metals",      "stages": [3, 4, 5], "en": "Silver",                            "fa": "نقره"},
+  {"symbol": "CPER", "group": "metals",      "stages": [3, 4],    "en": "Copper",                            "fa": "مس"},
+
+  {"symbol": "DBC",  "group": "commodities", "stages": [3, 4, 5], "en": "Broad commodities",                 "fa": "سبد کالاها"},
+  {"symbol": "USO",  "group": "commodities", "stages": [4, 5],    "en": "Crude oil",                         "fa": "نفت خام"},
+
+  {"symbol": "UUP",  "group": "currency",    "stages": [6, 1],    "en": "US dollar index",                   "fa": "شاخص دلار آمریکا"}
+]
