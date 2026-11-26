@@ -54,8 +54,15 @@ def fetch_yahoo(symbol, years="10y"):
         f"?range={years}&interval=1d&includeAdjustedClose=true"
     )
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20) as resp:
-        payload = json.load(resp)
+    for attempt in range(3):                      # retry slow or dropped replies
+        try:
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                payload = json.load(resp)
+            break
+        except Exception:
+            if attempt == 2:
+                raise
+            time.sleep(3 * (attempt + 1))
     result = payload["chart"]["result"][0]
     stamps = result["timestamp"]
     ind = result["indicators"]
@@ -65,6 +72,23 @@ def fetch_yahoo(symbol, years="10y"):
         for t, c in zip(stamps, closes)
         if c is not None
     ]
+    # Yahoo's long daily history leaves the latest day's close empty for a few hours after the
+    # close, while its summary already has the final price. Use that price, but only once the
+    # trading session has ended (never a half-day price), scaled like the adjusted series.
+    meta = result["meta"]
+    last_day = datetime.fromtimestamp(stamps[-1], timezone.utc).strftime("%Y-%m-%d") if stamps else None
+    session_end = (meta.get("currentTradingPeriod") or {}).get("regular", {}).get("end")
+    price, price_time = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+    if (rows and last_day and last_day > rows[-1][0] and price and price_time and session_end
+            and price_time >= session_end
+            and datetime.fromtimestamp(price_time, timezone.utc).strftime("%Y-%m-%d") == last_day):
+        raw = ind["quote"][0]["close"]
+        ratio = 1.0
+        for c_adj, c_raw in zip(reversed(closes), reversed(raw)):
+            if c_adj is not None and c_raw:
+                ratio = c_adj / c_raw
+                break
+        rows.append((last_day, price * ratio))
     if len(rows) < max(PERIODS.values()) + 30:
         raise RuntimeError(f"{symbol}: only {len(rows)} days of data")
     return {
