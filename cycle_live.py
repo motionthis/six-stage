@@ -157,6 +157,7 @@ def load_backtest(force):
         age = (datetime.now() - datetime.strptime(cached["built"], "%Y-%m-%d")).days
         fresh = age < BACKTEST_MAX_AGE_DAYS and all(":" in k or k.isdigit() for k in cached.get("periods", {}))
         fresh = fresh and any(":" in k for k in cached.get("periods", {}))   # needs the rule-aware format
+        fresh = fresh and bool(cached.get("deepbuy"))                         # needs the deep-buy study
     if fresh and not force:
         return cached
     try:
@@ -279,6 +280,15 @@ def main():
             "watch": fetch_watchlist(),
             "stale": False,
         }
+        try:                                   # VIX and the S&P 500's drop from its high
+            import deepbuy
+            print("Fetching VIX and S&P 500 history...")
+            data["deep"] = deepbuy.live()
+        except Exception as exc:
+            print(f"Deep-buy readings failed: {exc}", file=sys.stderr)
+            old = json.loads(CACHE.read_text()).get("deep") if CACHE.exists() else None
+            if old:
+                data["deep"] = dict(old, stale=True)
         CACHE.write_text(json.dumps(data))
     except Exception as exc:  # network down, Yahoo change, bad ticker
         print(f"Couldn't fetch prices: {exc}", file=sys.stderr)

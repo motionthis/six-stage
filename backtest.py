@@ -395,8 +395,18 @@ def run(log=print):
                 }),
             }
 
+    # History behind the page's deep-buy meter (12-month average, 2% band: the page default)
+    deep = None
+    try:
+        import deepbuy
+        stage_at, _ = stage_series(core, months, 12, "band")
+        deep = deepbuy.study(stage_at, spy)
+    except Exception as exc:
+        log(f"  deep-buy study failed: {exc}")
+
     return {
         "built": datetime.now().strftime("%Y-%m-%d"),
+        "deepbuy": deep,
         "split": SPLIT,
         "cost": COST,
         "proxies": {k: sym for k, (sym, _) in core.items()},
