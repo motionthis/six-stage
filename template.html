@@ -613,6 +613,39 @@ body.fa .nav-sep { letter-spacing: 0; font-size: 12.5px; }
 .nx-row b { text-align: end; }
 .nx-bar { height: 10px; border-radius: 5px; background: var(--surface); overflow: hidden; }
 .nx-bar i { display: block; height: 100%; background: var(--pick); border-radius: 5px; }
+
+/* Deep buy meter */
+.deep-pill { font-size: 13px; font-weight: 800; padding: 6px 12px; border-radius: 999px; background: var(--tint); color: var(--muted); }
+.deep-pill.lv1, .dlv.lv1 { background: var(--warn-soft); color: var(--warn); }
+.deep-pill.lv2, .dlv.lv2 { background: var(--up-soft); color: var(--up); }
+.deep-pill.lv3, .dlv.lv3 { background: var(--up); color: #fff; }
+.deep-zones { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.deep-zones div { display: grid; gap: 6px; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.deep-zones i { display: block; height: 12px; border-radius: 6px; background: var(--track); }
+.deep-zones .on { color: var(--ink); }
+.deep-zones .on.z0 i { background: var(--muted); }
+.deep-zones .on.z1 i { background: var(--warn); }
+.deep-zones .on.z2 i { background: #6fd3c4; }
+.deep-zones .on.z3 i { background: var(--up); }
+.deep-verdict { font-size: 16px; font-weight: 700; margin: 14px 0 16px; max-width: 75ch; }
+.deep-checks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+@media (max-width: 860px) { .deep-checks { grid-template-columns: 1fr; } }
+.deep-checks .after-box { align-content: start; }
+.dlv { justify-self: start; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: var(--surface); color: var(--muted); }
+.deep-spark { width: 100%; height: 56px; display: block; direction: ltr; }
+.deep-spark-l { font-size: 11.5px; color: var(--muted); }
+table.deep-tab { direction: inherit; min-width: 0; width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 13.5px; margin-top: 8px; }
+table.deep-tab th { font-size: 12px; color: var(--muted); font-weight: 700; text-align: start; padding: 0 8px; }
+table.deep-tab td { padding: 7px 8px; background: var(--tint); }
+table.deep-tab td:first-child { border-start-start-radius: 10px; border-end-start-radius: 10px; }
+table.deep-tab td:last-child { border-start-end-radius: 10px; border-end-end-radius: 10px; }
+table.deep-tab tr.ok td:last-child b { color: var(--up); }
+table.deep-tab tr.bad td:last-child b { color: var(--down); }
+.after-grid.deep-ev { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.after-grid.deep-ev[hidden] { display: none; }
+.deep-sum { display: grid; gap: 4px; margin-top: 10px; font-size: 14px; }
+.deep-facts { margin: 0; padding-inline-start: 18px; display: grid; gap: 8px; font-size: 14px; }
+@media (max-width: 480px) { .deep-zones div { font-size: 11px; } table.deep-tab { font-size: 12.5px; } table.deep-tab th, table.deep-tab td { padding-inline: 5px; } }
 </style>
 </head>
 <body class="fa">
@@ -697,6 +730,29 @@ body.fa .nav-sep { letter-spacing: 0; font-size: 12.5px; }
         <div class="after-facts" id="after-facts"></div>
       </div>
       <p class="bt-note" id="after-note"></p>
+    </section>
+
+    <section class="card" id="deep-sec">
+      <div class="card-top">
+        <h2 id="t-deep"></h2>
+        <span class="deep-pill" id="deep-pill"></span>
+      </div>
+      <p class="kicker" id="t-deep-sub"></p>
+      <p class="after-warn" id="deep-stale" hidden></p>
+      <div class="deep-zones" id="deep-zones"></div>
+      <p class="deep-verdict" id="deep-verdict"></p>
+      <div class="deep-checks" id="deep-checks"></div>
+      <div class="after-grid deep-ev">
+        <div>
+          <div class="ov-lbl" id="t-deep-ev"></div>
+          <div class="table-box"><table class="deep-tab" id="deep-tab"></table></div>
+          <div class="deep-sum" id="deep-sum"></div>
+        </div>
+        <div class="after-facts">
+          <div class="after-box"><h4 id="t-deep-facts"></h4><ul class="deep-facts" id="deep-facts"></ul></div>
+        </div>
+      </div>
+      <p class="bt-note" id="deep-note"></p>
     </section>
 
     <section class="card" id="live">
@@ -965,7 +1021,7 @@ const T = {
     flipped: "این دارایی جهتش را عوض کرده؛ مرحله بعد ممکن است شروع شده باشد.",
     nextNote: "خلاصه‌ای از الگوهای کلی مدل پرینگ است، نه توصیه سرمایه‌گذاری شخصی.",
     brand: "چرخه شش‌مرحله‌ای",
-    nav: ["امروز", "بعدش چه می‌شود", "قیمت‌های زنده", "جزئیات مرحله", "نمودار چرخه", "دارایی‌ها", "اقتصاد", "تاریخچه", "چرخش بخش‌ها", "آزمون راهبرد", "جدول مراحل"],
+    nav: ["امروز", "بعدش چه می‌شود", "خرید عمیق", "قیمت‌های زنده", "جزئیات مرحله", "نمودار چرخه", "دارایی‌ها", "اقتصاد", "تاریخچه", "چرخش بخش‌ها", "آزمون راهبرد", "جدول مراحل"],
     afterT: "بعدش چه می‌شود",
     afterSub: (s, a, b) => `در گذشته، پس از هر پایان ماهی که بازار در ${s} بود، چه اتفاقی افتاد؟ داده ماهانه از ${a} تا ${b}.`,
     afterRetT: "بازده بعدی (میانگین و درصد دفعات مثبت)",
@@ -983,6 +1039,44 @@ const T = {
     afterNextPring: (s) => `ترتیب کتاب پرینگ: ${s}`,
     afterNextNone: "هنوز دوره کاملی برای این مرحله ثبت نشده.",
     afterNote: "بازده از هر پایان ماه داخل مرحله حساب شده، پس دوره‌ها هم‌پوشانی دارند. «همه ماه‌ها» میانگین بلندمدت برای مقایسه است. نتایج گذشته تضمینی برای آینده نیست.",
+    deepT: "سنجه خرید عمیق",
+    deepSub: (y) => `سهام آمریکا چه زمانی خرید قوی بوده است؟ سه بررسی بر پایه داده‌های ${y} تا امروز.`,
+    deepLevels: ["فعلاً نه", "زیر نظر", "خرید پله‌ای", "خرید عمیق"],
+    deepVerdict: [
+      "زمان خرید عمیق نیست. ترس بازار کم است و سهام از سقف خود دور نیست.",
+      "با دقت دنبال کنید. بعضی نشانه‌های خرید عمیق دیده می‌شود، ولی هنوز کافی نیست.",
+      "خرید پله‌ای. سهام تخفیف زیادی دارد؛ خرید را در چند ماه پخش کنید.",
+      "خرید عمیق. طبق تاریخچه، این یکی از بهترین زمان‌های خرید سهام بوده است.",
+    ],
+    deepWait: "ترس شدید است، ولی چرخه در دوره افت است. در ۲۰۰۱ و ۲۰۰۸ سهام باز هم پایین‌تر رفت؛ صبر کنید تا مرحله ۲ شروع شود یا VIX دوباره زیر ۳۰ بیاید.",
+    deepFearT: "ترس بازار (VIX)",
+    deepFear: (now, peak, d) => `VIX امروز ${now}. بالاترین بسته‌شدن در یک ماه اخیر: ${peak} (${d}).`,
+    deepFearLv: ["آرام (زیر ۲۰)", "نگران (۲۰ تا ۳۰)", "ترس بالا (۳۰ تا ۴۰)", "ترس شدید (بالای ۴۰)"],
+    deepSpark: "VIX در یک سال اخیر؛ خط‌چین‌ها: ۳۰ و ۴۰",
+    deepPriceT: "قیمت (S&P 500)",
+    deepPrice: (drop, d) => `${drop} پایین‌تر از سقف خود در ${d}.`,
+    deepPriceLv: ["نزدیک سقف (کمتر از ۱۰٪)", "اصلاح (۱۰ تا ۲۰٪)", "بازار نزولی (۲۰ تا ۳۰٪)", "تخفیف عمیق (بیش از ۳۰٪)"],
+    deepCycleT: "فیلتر چرخه",
+    deepCycleLv: { fresh: "شروع مرحله ۲", healthy: "چرخه سالم", late: "اواخر چرخه", down: "دوره افت", mixed: "مختلط" },
+    deepFresh: (k) => `مرحله ۲ از ${k} ماه پیش شروع شده است: قوی‌ترین نشانه خرید سهام.`,
+    deepHealthy: (s) => `${s}. در مراحل ۲ تا ۴، جهش VIX یک ترس گذرا بوده است، نه سقوط.`,
+    deepLate: (s) => `${s}. اواخر چرخه است؛ جهش VIX در این زمان احتیاط بیشتری می‌خواهد.`,
+    deepDown: (s) => `${s}. دوره افت است؛ صبر کنید تا سهام رو به بالا برگردد (مرحله ۲).`,
+    deepMixedTxt: "سیگنال‌ها مختلط‌اند و مرحله مشخصی نیست.",
+    deepNeed: (x) => `سهام باید ${x} دیگر بالا برود تا مرحله ۲ شروع شود.`,
+    deepEvT: "هر بار که VIX بالای ۴۰ بسته شد",
+    deepEvCols: ["تاریخ", "VIX", "S&P یک سال بعد", "افت بیشتر در این میان", "مرحله"],
+    deepMixed: "مختلط",
+    deepEvSum: (label, avg, k, n) => `${label}: یک سال بعد ${avg}، ${k} بار از ${n} بار مثبت.`,
+    deepEvHealthy: "در مراحل ۲ تا ۴",
+    deepEvOther: "در دوره افت یا سیگنال مختلط",
+    deepFactsT: "نشانه‌های دیگر خرید عمیق",
+    deepFact2: (avg, k, n) => `ماه اول مرحله ۲: S&P یک سال بعد ${avg}، ${k} بار از ${n} بار مثبت.`,
+    deepFactCalm: (avg, k, n) => `برگشت VIX به زیر ۳۰ پس از جهش بالای ۴۰: یک سال بعد ${avg}، ${k} بار از ${n} بار مثبت.`,
+    deepFactDrop: (avg, p) => `سهام بیش از ۳۰٪ زیر سقف: یک سال بعد ${avg}، در ${p}٪ ماه‌ها مثبت.`,
+    deepFactAll: (avg, p) => `هر ماهی، برای مقایسه: یک سال بعد ${avg}، در ${p}٪ ماه‌ها مثبت.`,
+    deepNote: "حتی پس از نشانه‌های خوب خرید هم سهام اغلب باز پایین‌تر رفت (تا ۲۴٪ در ۲۰۲۰)، پس خرید پله‌ای بهتر از خرید یک‌جاست. نمونه‌ها کوچک‌اند. بر پایه داده‌های گذشته است، نه توصیه سرمایه‌گذاری شخصی.",
+    deepStale: "VIX به‌روز نشد؛ آخرین داده ذخیره‌شده نمایش داده می‌شود.",
     navResearch: "پژوهش", researchT: "پژوهش", researchSub: "این مدل در گذشته چطور عمل کرده است. برای استفاده روزانه لازم نیست.",
     todayT: "امروز", breadth: (k, n) => `${k} از ${n} دارایی صعودی‌اند.`,
     ruleLbl: "تأیید سیگنال:",
@@ -1197,7 +1291,7 @@ const T = {
     flipped: "This asset has already turned; the next stage may be starting.",
     nextNote: "A summary of general patterns from Pring's model, not personal investment advice.",
     brand: "Six-Stage",
-    nav: ["Today", "What happens next", "Live prices", "Stage details", "Cycle chart", "Assets", "Economy", "History", "Sector rotation", "Strategy test", "Stage matrix"],
+    nav: ["Today", "What happens next", "Deep buy", "Live prices", "Stage details", "Cycle chart", "Assets", "Economy", "History", "Sector rotation", "Strategy test", "Stage matrix"],
     afterT: "What happens next",
     afterSub: (s, a, b) => `What happened after every month-end the market spent in ${s}? Monthly data from ${a} to ${b}.`,
     afterRetT: "Returns afterwards (average and share of times positive)",
@@ -1215,6 +1309,44 @@ const T = {
     afterNextPring: (s) => `Pring's textbook order: ${s}`,
     afterNextNone: "No finished episode of this stage yet.",
     afterNote: "Returns are measured from every month-end inside the stage, so the periods overlap. “All months” is the long-run average, for comparison. Past results don't guarantee future ones.",
+    deepT: "Deep buy meter",
+    deepSub: (y) => `When have US stocks been a strong buy? Three checks, based on data from ${y} to today.`,
+    deepLevels: ["Not now", "Watch", "Buy in steps", "Deep buy"],
+    deepVerdict: [
+      "Not a deep-buy time. Fear is low and stocks are not far from their high.",
+      "Watch closely. Some deep-buy signs are showing, but not enough yet.",
+      "Buy in steps. Stocks are deeply discounted; spread your buying over several months.",
+      "Deep buy. In the past, this has been one of the best times to buy stocks.",
+    ],
+    deepWait: "Fear is extreme, but the cycle is in a downturn. In 2001 and 2008 stocks kept falling; wait for stage 2 or for VIX to drop back below 30.",
+    deepFearT: "Fear (VIX)",
+    deepFear: (now, peak, d) => `VIX is ${now} today. Highest close in the last month: ${peak} (${d}).`,
+    deepFearLv: ["Calm (under 20)", "Nervous (20–30)", "High fear (30–40)", "Extreme fear (40+)"],
+    deepSpark: "VIX over the past year; dashed lines at 30 and 40",
+    deepPriceT: "Price (S&P 500)",
+    deepPrice: (drop, d) => `${drop} below its high of ${d}.`,
+    deepPriceLv: ["Near the high (under 10%)", "Correction (10–20%)", "Bear market (20–30%)", "Deep discount (30%+)"],
+    deepCycleT: "Cycle filter",
+    deepCycleLv: { fresh: "Stage 2 just began", healthy: "Healthy cycle", late: "Late cycle", down: "Downturn", mixed: "Mixed" },
+    deepFresh: (k) => `Stage 2 began ${k} month(s) ago: the strongest buy sign for stocks.`,
+    deepHealthy: (s) => `${s}. In stages 2–4, VIX spikes were short scares, not crashes.`,
+    deepLate: (s) => `${s}. Late in the cycle, a VIX spike needs more caution.`,
+    deepDown: (s) => `${s}. A downturn: wait for stocks to turn up (stage 2).`,
+    deepMixedTxt: "Signals are mixed, with no clear stage.",
+    deepNeed: (x) => `Stocks need to rise ${x} more to start stage 2.`,
+    deepEvT: "Every time VIX closed above 40",
+    deepEvCols: ["Date", "VIX", "S&P 1 year later", "Fell further first", "Stage"],
+    deepMixed: "Mixed",
+    deepEvSum: (label, avg, k, n) => `${label}: ${avg} a year later, up ${k} of ${n} times.`,
+    deepEvHealthy: "In stages 2–4",
+    deepEvOther: "In a downturn or mixed signal",
+    deepFactsT: "Other deep-buy signs",
+    deepFact2: (avg, k, n) => `First month of stage 2: S&P ${avg} a year later, up ${k} of ${n} times.`,
+    deepFactCalm: (avg, k, n) => `VIX back under 30 after a spike above 40: ${avg} a year later, up ${k} of ${n} times.`,
+    deepFactDrop: (avg, p) => `Stocks 30%+ below their high: ${avg} a year later, up in ${p}% of months.`,
+    deepFactAll: (avg, p) => `Any month, for comparison: ${avg} a year later, up in ${p}% of months.`,
+    deepNote: "Even after good buy signals, stocks often fell further first (up to 24% in 2020), so buying in steps beats buying all at once. The samples are small. Based on past data; not personal investment advice.",
+    deepStale: "VIX couldn't be refreshed; showing the last saved reading.",
     navResearch: "Research", researchT: "Research", researchSub: "How the model has done in the past. Not needed for daily use.",
     todayT: "Today", breadth: (k, n) => `${k} of ${n} assets are rising.`,
     ruleLbl: "Confirmation:",
@@ -1432,6 +1564,7 @@ const ICONS = {
 const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3-4.5 5-3"/></svg>',
@@ -1442,8 +1575,8 @@ const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l5-7 4 3 8-11"/><path d="M3 21h18"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>',
 ];
-const NAV_IDS = ["today", "after-sec", "live", "stage-sec", "cycle-sec", "watch-sec", "econ-sec", "hist-sec", "bt-sec", "strat-sec", "matrix-sec"];
-const NAV_RESEARCH_AT = 8;   // a "Research" label goes before this item
+const NAV_IDS = ["today", "after-sec", "deep-sec", "live", "stage-sec", "cycle-sec", "watch-sec", "econ-sec", "hist-sec", "bt-sec", "strat-sec", "matrix-sec"];
+const NAV_RESEARCH_AT = 9;   // a "Research" label goes before this item
 // Stage the summary row describes: the live stage, or the selected one when signals are mixed
 const focusIdx = () => liveStageIdx ?? sel;
 const fitsUp = (s) => WATCH.filter((w) => !w.error && w.stages.includes(s + 1) && wp(w).dir > 0);
@@ -2568,6 +2701,112 @@ document.getElementById("after-pick").addEventListener("click", (e) => {
   if (b) { select(+b.dataset.stage); document.querySelector(`#after-pick [data-stage="${b.dataset.stage}"]`).focus(); }
 });
 
+// ---- Deep buy meter: fear (VIX), price (S&P 500 below its high), cycle filter, and the history behind it ----
+function drawDeep() {
+  const t = T[lang];
+  const sec = document.getElementById("deep-sec");
+  const L = ALL && ALL.deep;
+  if (!L || !L.vix || !L.spx || !DATA) { sec.hidden = true; return; }
+  sec.hidden = false;
+  const S = ALL.backtest && ALL.backtest.deepbuy;
+  const n1 = (v, d = 1) => `<span class="ltr num">${t.fmt(v, d)}</span>`;
+  const pc = (v, d = 1) => `<span class="ltr num">${(v > 0 ? "+" : v < 0 ? "−" : "") + t.fmt(Math.abs(v), d)}%</span>`;
+  const upK = (s) => Math.round((s.pos * s.n) / 100);
+
+  // 1. Fear: the higher of today's VIX and its highest close of the last month
+  const fearV = Math.max(L.vix.now, L.vix.peak || 0);
+  const fearLv = fearV >= 40 ? 3 : fearV >= 30 ? 2 : fearV >= 20 ? 1 : 0;
+  // 2. Price: how far the S&P 500 is below its all-time high
+  const drop = Math.max(0, -L.spx.drop);
+  const dropLv = drop >= 30 ? 3 : drop >= 20 ? 2 : drop >= 10 ? 1 : 0;
+  // 3. Cycle: the reading the page is showing
+  const stg = DATA.stage;
+  const Hs = DATA.history || [];
+  let since = 0;
+  if (stg === 2) for (let i = Hs.length - 1; i >= 0 && Hs[i].stage === 2; i--) since++;
+  const cyc = stg === 2 && since <= 2 ? "fresh" : [2, 3, 4].includes(stg) ? "healthy" : stg === 5 ? "late" : stg ? "down" : "mixed";
+
+  let lv = 0, wait = false;
+  if (cyc === "fresh" || (fearLv === 3 && cyc === "healthy")) lv = 3;
+  else if (dropLv === 3) lv = 2;
+  else if (fearLv === 3 && (cyc === "down" || cyc === "mixed")) { lv = 1; wait = true; }
+  else if (fearLv >= 2 || dropLv >= 1 || stg === 1 || fearLv === 3) lv = 1;
+
+  document.getElementById("t-deep").textContent = t.deepT;
+  document.getElementById("t-deep-sub").textContent = t.deepSub(t.num(Number(S ? S.from : 1990)).replace(/[٬,]/g, ""));
+  const pill = document.getElementById("deep-pill");
+  pill.textContent = t.deepLevels[lv];
+  pill.className = "deep-pill lv" + lv;
+  const stale = document.getElementById("deep-stale");
+  stale.hidden = !L.stale;
+  stale.textContent = L.stale ? t.deepStale : "";
+  document.getElementById("deep-zones").innerHTML = t.deepLevels.map((x, i) =>
+    `<div class="z${i}${i === lv ? " on" : ""}"${i === lv ? ' aria-current="true"' : ""}><i></i>${x}</div>`).join("");
+  document.getElementById("deep-verdict").textContent = wait ? t.deepWait : t.deepVerdict[lv];
+
+  // VIX sparkline with the 30 and 40 lines
+  const sv = (L.vix.spark && L.vix.spark.v) || [];
+  let spark = "";
+  if (sv.length > 1) {
+    const top = Math.max(45, ...sv) * 1.05, W = 300, H = 56;
+    const y = (v) => (H - (v / top) * H).toFixed(1);
+    const pts = sv.map((v, i) => `${((i / (sv.length - 1)) * W).toFixed(1)},${y(v)}`).join(" ");
+    spark = `<svg class="deep-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" x2="${W}" y1="${y(30)}" y2="${y(30)}" stroke="var(--warn)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+      <line x1="0" x2="${W}" y1="${y(40)}" y2="${y(40)}" stroke="var(--up)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
+      <span class="deep-spark-l">${t.deepSpark}</span>`;
+  }
+  let cycTxt;
+  const sl = stg ? stageLabel(stg - 1) : "";
+  if (cyc === "fresh") cycTxt = t.deepFresh(t.num(since));
+  else if (cyc === "healthy") cycTxt = t.deepHealthy(sl);
+  else if (cyc === "late") cycTxt = t.deepLate(sl);
+  else if (cyc === "down") cycTxt = t.deepDown(sl);
+  else cycTxt = t.deepMixedTxt;
+  if (stg === 1 && DATA.assets && DATA.assets.stocks) {
+    const g = DATA.assets.stocks.gap;
+    const need = Math.max(0, rule === "band" ? 2 - g : -g);
+    cycTxt += " " + t.deepNeed(pc(need, 1));
+  }
+  const cycLvCls = { fresh: 3, healthy: 2, late: 1, down: 0, mixed: 0 }[cyc];
+  const box = (title, cls, label, body) => `<div class="after-box"><h4>${title}</h4><span class="dlv lv${cls}">${label}</span><p>${body}</p></div>`;
+  document.getElementById("deep-checks").innerHTML =
+    box(t.deepFearT, fearLv, t.deepFearLv[fearLv], t.deepFear(n1(L.vix.now), n1(L.vix.peak), t.date(L.vix.peakDate))) .replace("</p></div>", `</p>${spark}</div>`) +
+    box(t.deepPriceT, dropLv, t.deepPriceLv[dropLv], t.deepPrice(`<span class="ltr num">${t.fmt(drop, 1)}%</span>`, t.date(L.spx.highDate))) +
+    box(t.deepCycleT, cycLvCls, t.deepCycleLv[cyc], cycTxt);
+
+  // History behind the meter
+  const ev = document.querySelector("#deep-sec .deep-ev");
+  ev.hidden = !S;
+  if (S) {
+    document.getElementById("t-deep-ev").textContent = t.deepEvT;
+    let rows = `<tr>${t.deepEvCols.map((c) => `<th>${c}</th>`).join("")}</tr>`;
+    S.events.forEach((e) => {
+      const stCell = !e.known ? "–" : e.stage ? `<b>${t.num(e.stage)}</b>` : t.deepMixed;
+      rows += `<tr class="${e.r12 == null ? "" : e.r12 > 0 ? "ok" : "bad"}">
+        <td>${new Date(e.date + "T12:00:00").toLocaleDateString(lang === "fa" ? "fa-IR" : "en-US", { year: "numeric", month: "short" })}</td><td>${n1(e.vix)}</td>
+        <td><b class="${e.r12 == null ? "" : e.r12 >= 0 ? "pos" : "neg"}">${e.r12 == null ? "–" : pc(e.r12)}</b></td>
+        <td>${e.lower < 0 ? pc(e.lower) : pc(0)}</td><td>${stCell}</td></tr>`;
+    });
+    document.getElementById("deep-tab").innerHTML = rows;
+    const sum = [];
+    if (S.healthy.r12) sum.push(`<span>${t.deepEvSum(t.deepEvHealthy, pc(S.healthy.r12.avg), t.num(upK(S.healthy.r12)), t.num(S.healthy.r12.n))}</span>`);
+    if (S.other.r12) sum.push(`<span>${t.deepEvSum(t.deepEvOther, pc(S.other.r12.avg), t.num(upK(S.other.r12)), t.num(S.other.r12.n))}</span>`);
+    document.getElementById("deep-sum").innerHTML = sum.join("");
+    document.getElementById("t-deep-facts").textContent = t.deepFactsT;
+    const f = [];
+    const s2 = S.stage2First && S.stage2First.r12;
+    if (s2) f.push(t.deepFact2(pc(s2.avg), t.num(upK(s2)), t.num(s2.n)));
+    if (S.calmAfter) f.push(t.deepFactCalm(pc(S.calmAfter.avg), t.num(upK(S.calmAfter)), t.num(S.calmAfter.n)));
+    const d30 = S.drops && S.drops[3] && S.drops[3].r12;
+    if (d30) f.push(t.deepFactDrop(pc(d30.avg), t.num(d30.pos)));
+    if (S.allMonths) f.push(t.deepFactAll(pc(S.allMonths.avg), t.num(S.allMonths.pos)));
+    document.getElementById("deep-facts").innerHTML = f.map((x) => `<li>${x}</li>`).join("");
+  }
+  document.getElementById("deep-note").textContent = t.deepNote;
+}
+
 function select(i, focus) {
   sel = i;
   drawFrame(); drawNext(); drawAfter(); drawChart(); drawDetail(); drawWatch(); drawBacktest(); drawStrategy(); drawMatrix();
@@ -2588,7 +2827,7 @@ function render() {
   document.getElementById("t-note").textContent = t.note;
   document.getElementById("lang-fa").setAttribute("aria-pressed", String(lang === "fa"));
   document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
-  drawLive(); drawFrame(); drawNext(); drawAfter(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
+  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
 }
 
 function setPeriod(p, focusId) {
