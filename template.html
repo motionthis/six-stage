@@ -542,9 +542,45 @@ table.heat td.lbl { text-align: left; font-weight: 600; white-space: nowrap; }
 body.fa table.heat td.lbl { text-align: right; }
 table.heat td.lbl .sym { font-size: 12px; color: var(--muted); font-weight: 500; }
 table.heat td.hc { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 600; border-radius: 8px; font-size: 13px; cursor: help; direction: ltr; }
-table.heat td.hc.sig { font-weight: 800; }
-table.heat td.hc.small { opacity: .45; }
-table.heat td.hc.claim { box-shadow: inset 0 0 0 2px var(--pick); }
+/* Three kinds of cell: strong (solid color, white text), normal (light tint), too little data (no fill, dashed) */
+table.heat td.hc.sig { font-weight: 800; color: #fff; }
+table.heat td.hc.small { color: var(--muted); font-weight: 500; outline: 1.5px dashed color-mix(in srgb, var(--muted) 70%, transparent); outline-offset: -3px; background: transparent !important; }
+table.heat td.hc.claim { box-shadow: inset 0 0 0 2.5px var(--pick); }
+table.heat td.hc.sig.claim { box-shadow: inset 0 0 0 2.5px var(--pick), inset 0 0 0 4px var(--surface); }
+/* Sector playbook */
+.play-now { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .play-now { grid-template-columns: 1fr; } }
+.play-box { border-radius: 18px; padding: 14px 16px; background: var(--tint); }
+.play-box h4 { margin: 0 0 10px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.play-box h4 i { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; color: #fff; font-style: normal; font-size: 13px; font-weight: 800; }
+.play-box.fav h4 i { background: color-mix(in srgb, var(--up) 82%, #000); }
+.play-box.avo h4 i { background: color-mix(in srgb, var(--down) 82%, #000); }
+.play-box ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.play-box li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--surface); border-radius: 12px; padding: 7px 10px; font-size: 13.5px; }
+.play-box li b { font-weight: 700; }
+.play-box li .sym { color: var(--muted); font-size: 12px; }
+.play-box li .src { margin-inline-start: auto; display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.play-box li .src em { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--tint); color: var(--muted); white-space: nowrap; }
+.play-box li .src em.on { background: var(--accent-soft); color: var(--ink); }
+.play-box .none { color: var(--muted); font-size: 13px; margin: 0; }
+table.play-tab { border-collapse: separate; border-spacing: 4px; min-width: 620px; direction: inherit; }
+table.play-tab th, table.play-tab td { border-bottom: 0; padding: 7px 4px; }
+table.play-tab th { font-size: 12px; }
+table.play-tab th small { display: block; font-weight: 500; color: var(--muted); font-size: 11px; }
+table.play-tab th.on { background: var(--sel); border-radius: 8px; }
+table.play-tab td.lbl { text-align: start; font-weight: 600; white-space: nowrap; }
+table.play-tab td.lbl .sym { font-size: 12px; color: var(--muted); font-weight: 500; }
+table.play-tab td.ps { border-radius: 8px; font-weight: 800; font-size: 14px; letter-spacing: .05em; direction: ltr; min-width: 44px; }
+table.play-tab td.ps.pp { background: color-mix(in srgb, var(--up) 82%, #000); color: #fff; }
+table.play-tab td.ps.p { background: color-mix(in srgb, var(--up) 22%, transparent); color: var(--ink); }
+table.play-tab td.ps.m { background: color-mix(in srgb, var(--down) 22%, transparent); color: var(--ink); }
+table.play-tab td.ps.mm { background: color-mix(in srgb, var(--down) 82%, #000); color: #fff; }
+table.play-tab td.ps.z { color: var(--muted); font-weight: 500; }
+table.play-tab td.ps.s { color: var(--muted); font-weight: 500; outline: 1.5px dashed color-mix(in srgb, var(--muted) 70%, transparent); outline-offset: -3px; }
+table.play-tab td.ps.on { box-shadow: inset 0 0 0 2.5px var(--pick); }
+.heat-key { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 0; font-size: 12.5px; color: var(--muted); align-items: center; }
+.heat-key span { display: inline-flex; align-items: center; gap: 6px; }
+.heat-key i { display: inline-grid; place-items: center; min-width: 46px; height: 24px; border-radius: 7px; font-style: normal; font-family: var(--font-num); font-size: 12px; font-weight: 700; direction: ltr; }
 table.heat td.hc.none { color: var(--muted); }
 .agree { font-weight: 700; white-space: nowrap; }
 .agree.yes { color: var(--up); }
@@ -849,6 +885,19 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <div class="table-box"><table class="watch" id="watch"></table></div>
     </section>
 
+    <section class="card" id="play-sec">
+      <div class="card-top">
+        <h2 id="t-play"></h2>
+        <span class="conv" id="play-phase"></span>
+      </div>
+      <p class="kicker" id="t-play-sub"></p>
+      <div class="play-now" id="play-now"></div>
+      <h3 class="bt-sub" id="t-play-all"></h3>
+      <div class="table-box"><table class="play-tab" id="play-tab"></table></div>
+      <div class="heat-key" id="play-key"></div>
+      <p class="bt-note" id="play-note"></p>
+    </section>
+
     <section class="card" id="after-sec">
       <div class="card-top">
         <h2 id="t-after"></h2>
@@ -960,6 +1009,7 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <h3 class="bt-sub" id="t-bt-sec"></h3>
       <p class="bt-intro" id="bt-intro"></p>
       <div class="table-box"><table class="heat" id="heat-sec"></table></div>
+      <div class="heat-key" id="heat-key"></div>
       <p class="hint" id="t-heat-hint"></p>
       <p class="verdict" id="bt-verdict"></p>
       <h3 class="bt-sub" id="t-bt-cls"></h3>
@@ -1131,7 +1181,7 @@ const T = {
     flipped: "این دارایی جهتش را عوض کرده؛ مرحله بعد ممکن است شروع شده باشد.",
     nextNote: "خلاصه‌ای از الگوهای کلی مدل پرینگ است، نه توصیه سرمایه‌گذاری شخصی.",
     brand: "چرخه شش‌مرحله‌ای",
-    nav: ["امروز", "خرید عمیق", "دارایی‌ها", "بعدش چه می‌شود", "قیمت‌های زنده", "اقتصاد", "قیمت و مراحل", "تاریخچه", "نمودار چرخه", "جزئیات مرحله", "چرخش بخش‌ها", "آزمون راهبرد"],
+    nav: ["امروز", "خرید عمیق", "دارایی‌ها", "نقشه بخش‌ها", "بعدش چه می‌شود", "قیمت‌های زنده", "اقتصاد", "قیمت و مراحل", "تاریخچه", "نمودار چرخه", "جزئیات مرحله", "چرخش بخش‌ها", "آزمون راهبرد"],
     afterT: "بعدش چه می‌شود",
     afterSub: (s, a, b) => `در گذشته، پس از هر پایان ماهی که بازار در ${s} بود، چه اتفاقی افتاد؟ داده ماهانه از ${a} تا ${b}.`,
     afterRetT: "بازده بعدی (میانگین و درصد دفعات مثبت)",
@@ -1210,6 +1260,19 @@ const T = {
     chgVix: (a, b) => `شاخص ترس <bdi dir="ltr">VIX</bdi>: ${a} ← ${b}`,
     chgScore: (a, b) => `امتیاز اقتصاد: ${a} ← ${b}`,
     chgDeep: (a, b) => `سنج خرید عمیق: ${a} ← ${b}`,
+    playT: (st) => `نقشه بخش‌ها برای ${st}`,
+    playSub: "کدام بخش‌های بازار سهام را بیشتر یا کمتر داشته باشیم. سه منبع کنار هم: داده‌های خود این سایت از ۱۹۹۸، نمودار کتابی پرینگ، و پژوهش فیدلیتی (۱۹۶۲ تا ۲۰۲۰). هر چه منابع بیشتری هم‌نظر باشند، نتیجه محکم‌تر است.",
+    playFav: "بیشتر داشته باشید", playAvoid: "کمتر داشته باشید یا دوری کنید",
+    playSrc: { data: "داده ما", book: "کتاب پرینگ", fid: "فیدلیتی" },
+    playNone: "در این مرحله هیچ منبعی چیز روشنی نمی‌گوید.",
+    playMixed: (list) => `منابع درباره این بخش‌ها هم‌نظر نیستند: ${list}.`,
+    playAllT: "همه مراحل (داده‌های خود ما)",
+    playTip: (avg, hit, n) => `${avg}٪ در سال نسبت به S&P 500 · در ${hit}٪ ماه‌ها بهتر · ${n} ماه`,
+    playKey: { pp: "قوی و معتبر", p: "تمایل مثبت", z: "الگوی روشنی نیست", m: "تمایل منفی", mm: "ضعیف و معتبر", s: "داده کم" },
+    playNote: "++ و −− یعنی نتیجه از نظر آماری معتبر است (|t| ≥ ۲). + و − یعنی بخش دست‌کم ۲٪ در سال بهتر یا بدتر بوده و در بیش از ۵۵٪ (یا کمتر از ۴۵٪) ماه‌ها از S&P 500 جلو یا عقب بوده است. نام فاز فیدلیتی زیر هر مرحله تقریبی است، چون دو روش متفاوت ساخته شده‌اند. این یک ابزار آموزشی است، نه توصیه سرمایه‌گذاری.",
+    fidPhase: { early: "≈ ابتدای چرخه", mid: "≈ میانه چرخه", late: "≈ اواخر چرخه", rec: "≈ رکود" },
+    fidPhaseTip: "نام تقریبی همین مرحله در چرخه چهارفازی فیدلیتی",
+    todaySectors: (fav, avo) => `بخش‌ها: <b>بیشتر</b> ${fav} · <b>کمتر</b> ${avo}`,
     todayT: "امروز", breadth: (k, n) => `${k} از ${n} دارایی صعودی‌اند.`,
     ruleLbl: "تأیید سیگنال:",
     ruleOpt: { raw: "بدون تأیید", band: "باند ۲٪", hold: "ماندن ۱ ماه" },
@@ -1270,8 +1333,9 @@ const T = {
     mixedOut: (k) => `${k} ماه سیگنال مختلط داشتند و کنار گذاشته شدند.`,
     colSector: "بخش", colAsset: "دارایی", colBest: "بهترین مرحله (داده)", colChart: "مرحله در نمودار", colAgree: "هم‌خوانی",
     agreeLbl: { yes: "بله", near: "نزدیک", no: "خیر" },
-    heatHint: "پررنگ: از نظر آماری معتبرتر (|t| ≥ ۲). کم‌رنگ: کمتر از ۲۴ ماه داده. کادر بنفش: مرحله‌ای که نمودار کتابی برای آن بخش می‌گوید. نشانگر را روی هر خانه نگه دارید تا جزئیات را ببینید.",
-    clsHint: "کادر بنفش: جایی که مدل پرینگ افزایش وزن آن دارایی را پیشنهاد می‌کند.",
+    heatHint: "معتبر یعنی |t| ≥ ۲ (احتمال کمتری دارد که تصادفی باشد). نشانگر را روی هر خانه نگه دارید یا روی آن بزنید تا جزئیات را ببینید.",
+    heatKey: { sig: "قوی و معتبر", norm: "ضعیف (ممکن است تصادفی باشد)", small: "داده کم (کمتر از ۲۴ ماه)", claim: "مرحله نمودار کتابی" },
+    clsHint: "کادر تیره: جایی که مدل پرینگ افزایش وزن آن دارایی را پیشنهاد می‌کند.",
     monthsN: (n) => `${n} ماه`,
     tipEx: (a, hit, n, tv) => `${a}٪ در سال نسبت به S&P 500 · در ${hit}٪ ماه‌ها بهتر از آن · ${n} ماه · t = ${tv}`,
     tipAbs: (a, hit, n, tv) => `${a}٪ در سال · ${hit}٪ ماه‌ها مثبت · ${n} ماه · t = ${tv}`,
@@ -1427,7 +1491,7 @@ const T = {
     flipped: "This asset has already turned; the next stage may be starting.",
     nextNote: "A summary of general patterns from Pring's model, not personal investment advice.",
     brand: "Six-Stage",
-    nav: ["Today", "Deep buy", "Assets", "What happens next", "Live prices", "Economy", "Price & stages", "History", "Cycle chart", "Stage details", "Sector rotation", "Strategy test"],
+    nav: ["Today", "Deep buy", "Assets", "Sector playbook", "What happens next", "Live prices", "Economy", "Price & stages", "History", "Cycle chart", "Stage details", "Sector rotation", "Strategy test"],
     afterT: "What happens next",
     afterSub: (s, a, b) => `What happened after every month-end the market spent in ${s}? Monthly data from ${a} to ${b}.`,
     afterRetT: "Returns afterwards (average and share of times positive)",
@@ -1506,6 +1570,19 @@ const T = {
     chgVix: (a, b) => `VIX: ${a} → ${b}`,
     chgScore: (a, b) => `Economy score: ${a} → ${b}`,
     chgDeep: (a, b) => `Deep buy meter: ${a} → ${b}`,
+    playT: (st) => `Sector playbook for ${st}`,
+    playSub: "Which stock-market sectors to hold more or less of. Three sources side by side: this site's own data since 1998, Pring's textbook chart, and Fidelity's research (1962–2020). The more sources agree, the firmer the call.",
+    playFav: "Favor", playAvoid: "Hold less or avoid",
+    playSrc: { data: "Our data", book: "Pring's book", fid: "Fidelity" },
+    playNone: "No source gives a clear call for this stage.",
+    playMixed: (list) => `The sources disagree about: ${list}.`,
+    playAllT: "Every stage (our own data)",
+    playTip: (avg, hit, n) => `${avg}% a year vs. the S&P 500 · better in ${hit}% of months · ${n} months`,
+    playKey: { pp: "Strong, reliable", p: "Leans positive", z: "No clear pattern", m: "Leans negative", mm: "Weak, reliable", s: "Little data" },
+    playNote: "++ and −− mean the result is statistically reliable (|t| ≥ 2). + and − mean the sector did at least 2% a year better or worse and beat (or lagged) the S&P 500 in more than 55% (or under 45%) of months. The Fidelity phase under each stage is approximate, because the two frameworks are built differently. This is an educational tool, not investment advice.",
+    fidPhase: { early: "≈ early cycle", mid: "≈ mid cycle", late: "≈ late cycle", rec: "≈ recession" },
+    fidPhaseTip: "Approximate name of this stage in Fidelity's four-phase cycle",
+    todaySectors: (fav, avo) => `Sectors: <b>favor</b> ${fav} · <b>less</b> ${avo}`,
     todayT: "Today", breadth: (k, n) => `${k} of ${n} assets are rising.`,
     ruleLbl: "Confirmation:",
     ruleOpt: { raw: "None", band: "2% band", hold: "Hold 1 mo" },
@@ -1566,8 +1643,9 @@ const T = {
     mixedOut: (k) => `${k} months had mixed signals and are left out.`,
     colSector: "Sector", colAsset: "Asset", colBest: "Best stage (data)", colChart: "Chart says", colAgree: "Agrees?",
     agreeLbl: { yes: "Yes", near: "Close", no: "No" },
-    heatHint: "Bold: statistically stronger (|t| ≥ 2). Faded: fewer than 24 months of data. Purple outline: the stage the textbook chart gives that sector. Hover a cell for details.",
-    clsHint: "Purple outline: where Pring's model says to overweight that asset.",
+    heatHint: "Reliable means |t| ≥ 2 (less likely to be chance). Hover or tap a cell for details.",
+    heatKey: { sig: "Strong, reliable", norm: "Weak (may be chance)", small: "Little data (under 24 months)", claim: "Textbook chart's stage" },
+    clsHint: "Dark outline: where Pring's model says to overweight that asset.",
     monthsN: (n) => `${n} months`,
     tipEx: (a, hit, n, tv) => `${a}% per year vs. S&P 500 · beat it in ${hit}% of months · ${n} months · t = ${tv}`,
     tipAbs: (a, hit, n, tv) => `${a}% per year · positive in ${hit}% of months · ${n} months · t = ${tv}`,
@@ -1731,6 +1809,7 @@ const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9.5h2M9 8.5v2M14 9.5h2.5M8 15h2.5M14 14l2 2M16 14l-2 2"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
@@ -1741,9 +1820,9 @@ const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 14c2.5-6 5-6 7.5 0s5 6 7.5 0"/><path d="M6 10c2.5-6 5-6 7.5 0s5 6 7.5 0" opacity=".55"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l5-7 4 3 8-11"/><path d="M3 21h18"/></svg>',
 ];
-const NAV_IDS = ["today", "deep-sec", "watch-sec", "after-sec", "live", "econ-sec", "price-sec", "hist-sec", "cycle-sec", "stage-sec", "bt-sec", "strat-sec"];
+const NAV_IDS = ["today", "deep-sec", "watch-sec", "play-sec", "after-sec", "live", "econ-sec", "price-sec", "hist-sec", "cycle-sec", "stage-sec", "bt-sec", "strat-sec"];
 // Menu groups: a label goes before these items (Now / Why / Learn / Research)
-const NAV_GROUPS = { 0: "now", 4: "why", 8: "learn", 10: "research" };
+const NAV_GROUPS = { 0: "now", 5: "why", 9: "learn", 11: "research" };
 // Stage the summary row describes: the live stage, or the selected one when signals are mixed
 const focusIdx = () => liveStageIdx ?? sel;
 const fitsUp = (s) => WATCH.filter((w) => !w.error && w.stages.includes(s + 1) && wp(w).dir > 0);
@@ -1904,6 +1983,16 @@ function drawNext() {
     const ltr = (v) => `<span class="ltr num">${v}</span>`;
     a.innerHTML = t.todayDeep(t.deepLevels[ds.lv], t.fmt(ds.L.vix.now, 1), ltr(t.fmt(ds.drop, 1) + "%"));
     meta.append(a);
+  }
+  // Fidelity's phase name and the sector playbook in one line
+  const btp = btData();
+  if (btp && btp.sectors) {
+    const L = playLists(btp, f + 1);
+    const syms = (arr) => arr.length ? arr.slice(0, 4).map((r) => `<span class="ltr" title="${r.name}">${r.sym}</span>`).join(lang === "fa" ? "، " : ", ") : "–";
+    const a2 = h("a", "deep");
+    a2.href = "#play-sec";
+    a2.innerHTML = `<b>${t.fidPhase[FID_PHASE[f + 1]]}</b> · ` + t.todaySectors(syms(L.fav), syms(L.avoid));
+    meta.append(a2);
   }
   drawSince();
 
@@ -2514,8 +2603,11 @@ function heatCell(c, excess, claim) {
   const t = T[lang];
   if (!c) return h("td", "hc none", "–");
   const strength = Math.min(Math.abs(c.avg) / 20, 1);
-  const td = h("td", "hc" + (Math.abs(c.t) >= 2 && !c.small ? " sig" : "") + (c.small ? " small" : "") + (claim ? " claim" : ""), fmtPct(c.avg));
-  td.style.background = `color-mix(in srgb, ${c.avg >= 0 ? "var(--up)" : "var(--down)"} ${Math.round(6 + strength * 40)}%, transparent)`;
+  const sig = Math.abs(c.t) >= 2 && !c.small;
+  const td = h("td", "hc" + (sig ? " sig" : "") + (c.small ? " small" : "") + (claim ? " claim" : ""), fmtPct(c.avg));
+  const col = c.avg >= 0 ? "var(--up)" : "var(--down)";
+  // strong: solid, deepened so white text stays readable; normal: light tint that grows with size
+  td.style.background = sig ? `color-mix(in srgb, ${col} 82%, #000)` : `color-mix(in srgb, ${col} ${Math.round(10 + strength * 22)}%, transparent)`;
   td.title = (excess ? t.tipEx : t.tipAbs)(fmtPct(c.avg), t.num(c.hit), t.num(c.n), t.fmt(c.t, 2));
   return td;
 }
@@ -2531,6 +2623,95 @@ function heatHead(bt, firstCol, extra) {
   });
   extra.forEach((x) => tr.append(h("th", null, x)));
   return tr;
+}
+
+// ---- Sector playbook: favor / avoid by stage, from our data, Pring's textbook chart and Fidelity's research ----
+// Pring stage → Fidelity's four phases (approximate; the two frameworks are built differently)
+const FID_PHASE = { 1: "rec", 2: "early", 3: "early", 4: "mid", 5: "late", 6: "rec" };
+// Fidelity, "The Business Cycle Approach to Equity Sector Investing" (2021), US sectors 1962-2020
+const FID_LISTS = {
+  early: { fav: ["XLY", "XLF", "XLRE", "XLI", "XLK", "XLB"], avoid: ["XLV", "XLU", "XLC"] },
+  mid: { fav: ["XLK", "XLC"], avoid: ["XLB", "XLU"] },
+  late: { fav: ["XLE", "XLP", "XLU", "XLV"], avoid: ["XLK", "XLY", "XLC"] },
+  rec: { fav: ["XLP", "XLU", "XLV"], avoid: ["XLF", "XLI", "XLK", "XLRE"] },
+};
+// Our data → symbol: ++ / -- reliable (|t| >= 2), + / - lean (2%+ a year and 55%/45% of months), · too few months, ○ no clear pattern
+function playMark(c) {
+  if (!c) return "s";
+  if (c.small) return "s";
+  if (c.avg > 0 && c.t >= 2) return "pp";
+  if (c.avg < 0 && c.t <= -2) return "mm";
+  if (c.avg >= 2 && c.hit >= 55) return "p";
+  if (c.avg <= -2 && c.hit <= 45) return "m";
+  return "z";
+}
+const PLAY_SYM = { pp: "++", p: "+", z: "○", m: "−", mm: "−−", s: "·" };
+
+function playLists(bt, st) {
+  const ph = FID_LISTS[FID_PHASE[st]];
+  const rows = SECTOR_META.map(([sym, en, fa, chartStage]) => {
+    const mk = playMark(bt && bt.sectors[sym] && bt.sectors[sym][st]);
+    const fav = { data: mk === "pp" || mk === "p", book: chartStage === st, fid: ph.fav.includes(sym) };
+    const avo = { data: mk === "mm" || mk === "m", fid: ph.avoid.includes(sym) };
+    return { sym, name: lang === "fa" ? fa : en, mk, fav, avo,
+      fs: (fav.data ? (mk === "pp" ? 2 : 1) : 0) + fav.book + fav.fid, as: (avo.data ? (mk === "mm" ? 2 : 1) : 0) + avo.fid };
+  });
+  const fav = rows.filter((r) => r.fs > 0 && r.as === 0).sort((a, b) => b.fs - a.fs);
+  const avoid = rows.filter((r) => r.as > 0 && r.fs === 0).sort((a, b) => b.as - a.as);
+  const mixed = rows.filter((r) => r.as > 0 && r.fs > 0);
+  return { fav, avoid, mixed };
+}
+
+function drawPlaybook() {
+  const t = T[lang];
+  const sec = document.getElementById("play-sec");
+  const bt = btData();
+  if (!bt || !bt.sectors) { sec.hidden = true; return; }
+  sec.hidden = false;
+  const st = sel + 1;
+  const escH = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  document.getElementById("t-play").textContent = t.playT(stageLabel(sel));
+  document.getElementById("play-phase").textContent = t.fidPhase[FID_PHASE[st]];
+  document.getElementById("play-phase").title = t.fidPhaseTip;
+  document.getElementById("t-play-sub").textContent = t.playSub;
+
+  const L = playLists(bt, st);
+  const item = (r, side) => {
+    const src = side === "fav"
+      ? [["data", r.fav.data, PLAY_SYM[r.mk]], ["book", r.fav.book], ["fid", r.fav.fid]]
+      : [["data", r.avo.data, PLAY_SYM[r.mk]], ["fid", r.avo.fid]];
+    return `<li><b>${escH(r.name)}</b><span class="sym ltr">${r.sym}</span><span class="src">${src.filter(([, on]) => on)
+      .map(([k, , sym]) => `<em class="on">${escH(t.playSrc[k])}${sym ? ` <span class="ltr">${sym}</span>` : ""}</em>`).join("")}</span></li>`;
+  };
+  const box = (cls, icon, title, arr, side) => `<div class="play-box ${cls}"><h4><i>${icon}</i>${escH(title)}</h4>`
+    + (arr.length ? `<ul>${arr.map((r) => item(r, side)).join("")}</ul>` : `<p class="none">${escH(t.playNone)}</p>`) + `</div>`;
+  document.getElementById("play-now").innerHTML = box("fav", "+", t.playFav, L.fav, "fav") + box("avo", "−", t.playAvoid, L.avoid, "avo")
+    + (L.mixed.length ? `<p class="bt-note" style="grid-column:1/-1;margin:0">${escH(t.playMixed(L.mixed.map((r) => r.name).join(lang === "fa" ? "، " : ", ")))}</p>` : "");
+
+  // Full table: our data for every stage, with Fidelity's phase under each stage
+  document.getElementById("t-play-all").textContent = t.playAllT;
+  const tb = document.getElementById("play-tab");
+  let html = `<tr><th>${escH(t.colSector)}</th>` + STAGES.map((_, i) =>
+    `<th class="${i === sel ? "on" : ""}">${escH(stageLabel(i))}<small>${escH(t.fidPhase[FID_PHASE[i + 1]])}</small></th>`).join("") + `</tr>`;
+  SECTOR_META.forEach(([sym, en, fa, chartStage]) => {
+    html += `<tr><td class="lbl">${escH(lang === "fa" ? fa : en)} <span class="sym">${sym}</span></td>`;
+    for (let s2 = 1; s2 <= 6; s2++) {
+      const c = bt.sectors[sym] && bt.sectors[sym][s2];
+      const mk = playMark(c);
+      const tip = c ? t.playTip(fmtPct(c.avg), t.num(c.hit), t.num(c.n)) : "";
+      html += `<td class="ps ${mk}${chartStage === s2 ? " on" : ""}" title="${escH(tip)}">${PLAY_SYM[mk]}</td>`;
+    }
+    html += `</tr>`;
+  });
+  tb.innerHTML = html;
+  const K = t.playKey;
+  document.getElementById("play-key").innerHTML = [["pp", K.pp], ["p", K.p], ["z", K.z], ["m", K.m], ["mm", K.mm], ["s", K.s]].map(([k, lbl]) => {
+    const st2 = { pp: `background:color-mix(in srgb, var(--up) 82%, #000);color:#fff`, p: `background:color-mix(in srgb, var(--up) 22%, transparent)`,
+      m: `background:color-mix(in srgb, var(--down) 22%, transparent)`, mm: `background:color-mix(in srgb, var(--down) 82%, #000);color:#fff`,
+      z: `color:var(--muted)`, s: `outline:1.5px dashed color-mix(in srgb, var(--muted) 70%, transparent);outline-offset:-3px;color:var(--muted)` }[k];
+    return `<span><i style="${st2};min-width:34px">${PLAY_SYM[k]}</i>${escH(lbl)}</span>`;
+  }).join("") + `<span><i style="box-shadow:inset 0 0 0 2.5px var(--pick);min-width:34px"></i>${escH(t.heatKey.claim)}</span>`;
+  document.getElementById("play-note").textContent = t.playNote;
 }
 
 function drawBacktest() {
@@ -2593,6 +2774,13 @@ function drawBacktest() {
     tb.append(tr);
   });
   document.getElementById("t-heat-hint").textContent = t.heatHint;
+  // Visual key: one sample of each kind of cell
+  const K = t.heatKey, up = "var(--up)";
+  document.getElementById("heat-key").innerHTML =
+    `<span><i style="background:color-mix(in srgb, ${up} 82%, #000);color:#fff">+4.2%</i>${K.sig}</span>`
+    + `<span><i style="background:color-mix(in srgb, ${up} 20%, transparent);color:var(--ink)">+1.1%</i>${K.norm}</span>`
+    + `<span><i style="outline:1.5px dashed color-mix(in srgb, var(--muted) 70%, transparent);outline-offset:-3px;color:var(--muted);font-weight:500">+3.0%</i>${K.small}</span>`
+    + `<span><i style="box-shadow:inset 0 0 0 2.5px var(--pick)"></i>${K.claim}</span>`;
   document.getElementById("bt-verdict").textContent = t.verdict(t.num(tally.yes), t.num(tally.near), t.num(counted))
     + (stableN ? t.stableVerdict(t.num(stableYes), t.num(stableN)) : "");
 
@@ -3113,7 +3301,7 @@ function drawDeep() {
 
 function select(i, focus) {
   sel = i;
-  drawFrame(); drawNext(); drawAfter(); drawChart(); drawDetail(); drawWatch(); drawBacktest(); drawStrategy();
+  drawFrame(); drawNext(); drawAfter(); drawChart(); drawDetail(); drawWatch(); drawPlaybook(); drawBacktest(); drawStrategy();
   if (focus) document.getElementById("col-" + i).focus();
 }
 
@@ -3130,7 +3318,7 @@ function render() {
   document.getElementById("t-note").textContent = t.note;
   document.getElementById("lang-fa").setAttribute("aria-pressed", String(lang === "fa"));
   document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
-  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawPriceChart(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory();
+  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawPriceChart(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawPlaybook(); drawBacktest(); drawStrategy(); drawHistory();
 }
 
 // ---- S&P 500 with each month shaded by its stage ----
