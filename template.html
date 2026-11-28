@@ -135,6 +135,27 @@ nav a.on svg { color: var(--accent); }
 
 /* Top bar */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; background: var(--surface); border-radius: 18px; padding: 14px 22px; box-shadow: var(--shadow); }
+/* Pinned copy of the reading switches: shown once the top bar scrolls away.
+   Desktop: one slim row. Phone: a summary chip that opens the switches. */
+.pin-wrap { position: sticky; top: 10px; height: 0; margin-bottom: -24px; z-index: 40; display: flex; justify-content: center; align-items: flex-start; pointer-events: none; }
+.pin { pointer-events: none; opacity: 0; transform: translateY(-8px); transition: opacity .18s, transform .18s; background: var(--surface); border-radius: 16px; box-shadow: 0 8px 28px rgba(31,43,59,.16); padding: 6px 14px; max-width: calc(100vw - 24px); }
+.pin-wrap.show .pin { pointer-events: auto; opacity: 1; transform: none; }
+.pin-chip { display: none; }
+.pin-body { display: flex; align-items: center; gap: 6px 18px; flex-wrap: wrap; justify-content: center; }
+.pin-row { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pin-row > span { color: var(--muted); font-size: 13px; font-weight: 600; }
+.pin-stage { font-size: 13px; font-weight: 800; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 9px; white-space: nowrap; }
+@media (max-width: 960px) {
+  .pin { padding: 0; border-radius: 14px; }
+  .pin-chip { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; font-weight: 700; padding: 9px 14px; cursor: pointer; border-radius: 14px; }
+  .pin-chip svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+  .pin-chip .chev { color: var(--muted); transition: transform .15s; }
+  .pin-chip[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  .pin-body { display: none; flex-direction: column; align-items: stretch; padding: 4px 14px 12px; border-top: 1px solid var(--line); }
+  .pin.open .pin-body { display: flex; }
+  .pin-stage { display: none; }
+  .pin-row { justify-content: space-between; }
+}
 .pillbox { display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .pillbox > span { color: var(--muted); font-size: 14px; font-weight: 600; }
 .cta {
@@ -696,12 +717,26 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
   </aside>
 
   <main class="main">
-    <div class="topbar">
+    <div class="pin-wrap" id="pin-wrap" aria-hidden="true">
+      <div class="pin" id="pin">
+        <button class="pin-chip" type="button" id="pin-chip" aria-expanded="false" aria-controls="pin-body">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+          <span id="pin-sum"></span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="pin-body" id="pin-body">
+          <span class="pin-stage" id="pin-stage"></span>
+          <div class="pin-row"><span id="pin-t-period"></span><div class="seg period-seg" role="group" data-where="pin"></div></div>
+          <div class="pin-row"><span id="pin-t-rule"></span><div class="seg period-seg rule-seg" role="group" data-where="pin"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar" id="topbar">
       <div class="pillbox">
         <span id="t-period"></span>
         <div class="seg period-seg" role="group" data-where="top"></div>
         <span id="t-rule"></span>
-        <div class="seg period-seg" role="group" id="rule-seg"></div>
+        <div class="seg period-seg rule-seg" role="group" data-where="top"></div>
       </div>
       <button class="cta" type="button" id="cta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 18h16M7 14l4-4 3 3 5-6"/></svg>
@@ -1566,19 +1601,22 @@ function drawLive() {
   document.getElementById("t-period-hint").textContent = t.periodHint;
   // Confirmation-rule switch
   document.getElementById("t-rule").textContent = t.ruleLbl;
-  const rseg = document.getElementById("rule-seg");
-  rseg.setAttribute("aria-label", t.ruleLbl);
-  rseg.replaceChildren();
-  RULE_KEYS.forEach((r) => {
-    const b = h("button", null, t.ruleOpt[r]);
-    b.type = "button"; b.id = "rule-" + r;
-    b.title = t.ruleTip[r];
-    b.setAttribute("aria-pressed", String(r === rule));
-    b.addEventListener("click", () => setRule(r));
-    rseg.append(b);
+  document.querySelectorAll(".rule-seg[data-where]").forEach((rseg) => {
+    const where = rseg.dataset.where;
+    rseg.setAttribute("aria-label", t.ruleLbl);
+    rseg.replaceChildren();
+    RULE_KEYS.forEach((r) => {
+      const b = h("button", null, t.ruleOpt[r]);
+      b.type = "button"; b.id = `rule-${where}-${r}`;
+      b.title = t.ruleTip[r];
+      b.setAttribute("aria-pressed", String(r === rule));
+      b.addEventListener("click", () => setRule(r, b.id));
+      rseg.append(b);
+    });
   });
+  drawPin();
   // Same switch in the sidebar and in the cycle chart header, kept in sync
-  document.querySelectorAll(".period-seg[data-where]").forEach((seg) => {
+  document.querySelectorAll(".period-seg[data-where]:not(.rule-seg)").forEach((seg) => {
     const where = seg.dataset.where;
     seg.setAttribute("aria-label", t.period);
     seg.replaceChildren();
@@ -3053,24 +3091,62 @@ function render() {
   drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
 }
 
+// ---- Pinned reading switches ----
+function drawPin() {
+  const t = T[lang];
+  const st = DATA && DATA.stage ? stageLabel(DATA.stage - 1) : t.statMixed;
+  const sep = " · ";
+  document.getElementById("pin-sum").textContent = t.periodOpt(period) + sep + t.ruleOpt[rule] + sep + st;
+  document.getElementById("pin-stage").textContent = st;
+  document.getElementById("pin-t-period").textContent = t.period;
+  document.getElementById("pin-t-rule").textContent = t.ruleLbl;
+  document.getElementById("pin-chip").title = t.period + " / " + t.ruleLbl;
+}
+(function () {
+  const wrap = document.getElementById("pin-wrap"), pin = document.getElementById("pin"), chip = document.getElementById("pin-chip");
+  const setOpen = (o) => { pin.classList.toggle("open", o); chip.setAttribute("aria-expanded", String(o)); };
+  const show = (on) => {
+    wrap.classList.toggle("show", on);
+    wrap.setAttribute("aria-hidden", String(!on));
+    pin.inert = !on;
+    if (!on) setOpen(false);
+  };
+  chip.addEventListener("click", () => setOpen(!pin.classList.contains("open")));
+  document.addEventListener("click", (e) => { if (!e.composedPath().includes(pin)) setOpen(false); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && pin.classList.contains("open")) { setOpen(false); chip.focus(); } });
+  show(false);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([en]) => show(!en.isIntersecting && en.boundingClientRect.top < 0))
+      .observe(document.getElementById("topbar"));
+  }
+})();
+
+// Redraw without moving the section the reader is looking at (text above it can change height)
+function keepPlace(fn) {
+  const hit = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+  const anchor = hit && hit.closest(".main > section, .main > div[id]:not(#pin-wrap)");
+  const before = anchor ? anchor.getBoundingClientRect().top : 0;
+  fn();
+  if (anchor && scrollY > 0) window.scrollBy({ top: anchor.getBoundingClientRect().top - before, behavior: "instant" });
+}
 function setPeriod(p, focusId) {
   period = p;
   try { localStorage.setItem("cycle-period", p); } catch (e) {}
   loadPeriod();
   sel = liveStageIdx ?? (DATA.nearest.length ? DATA.nearest[0] - 1 : sel);
   trend = liveTrend();
-  render();
-  if (focusId) document.getElementById(focusId).focus();
+  keepPlace(render);
+  if (focusId) document.getElementById(focusId).focus({ preventScroll: true });
 }
 
-function setRule(r) {
+function setRule(r, focusId) {
   rule = r;
   try { localStorage.setItem("cycle-rule2", r); } catch (e) {}
   loadPeriod();
   sel = liveStageIdx ?? (DATA.nearest.length ? DATA.nearest[0] - 1 : sel);
   trend = liveTrend();
-  render();
-  document.getElementById("rule-" + r).focus();
+  keepPlace(render);
+  document.getElementById(focusId || "rule-top-" + r).focus({ preventScroll: true });
 }
 
 function setLang(l) {
