@@ -411,6 +411,7 @@ def run(log=print):
             results[signals.key(n, rule)] = {
                 "start": tested[0] if tested else None,
                 "end": tested[-1] if tested else None,
+                "stages": [stage_at[m] or 0 for m in tested],   # one per month from start; 0 = mixed
                 "counts": counts,
                 "mixed": mixed,
                 "sectors": table(sec_acc["all"]),
@@ -425,6 +426,16 @@ def run(log=print):
                 }),
             }
 
+    # S&P 500 index month-ends for the page's stage-colored price chart
+    spx = None
+    try:
+        idx = fetch_monthly("^GSPC")
+        first = months[0]
+        spx_months = [m for m in months if m >= first]
+        spx = {"start": first, "v": [round(idx[m], 2) if m in idx else None for m in spx_months]}
+    except Exception as exc:
+        log(f"  ^GSPC: {exc}")
+
     # History behind the page's deep-buy meter (12-month average, 2% band: the page default)
     deep = None
     try:
@@ -437,6 +448,7 @@ def run(log=print):
     return {
         "built": datetime.now().strftime("%Y-%m-%d"),
         "deepbuy": deep,
+        "spx": spx,
         "split": SPLIT,
         "cost": COST,
         "proxies": {k: sym for k, (sym, _) in core.items()},

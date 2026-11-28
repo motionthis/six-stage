@@ -158,6 +158,7 @@ def load_backtest(force):
         fresh = age < BACKTEST_MAX_AGE_DAYS and all(":" in k or k.isdigit() for k in cached.get("periods", {}))
         fresh = fresh and any(":" in k for k in cached.get("periods", {}))   # needs the rule-aware format
         fresh = fresh and bool(cached.get("deepbuy"))                         # needs the deep-buy study
+        fresh = fresh and bool(cached.get("spx"))                             # needs the price-chart series
     if fresh and not force:
         return cached
     try:

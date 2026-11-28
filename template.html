@@ -135,6 +135,27 @@ nav a.on svg { color: var(--accent); }
 
 /* Top bar */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; background: var(--surface); border-radius: 18px; padding: 14px 22px; box-shadow: var(--shadow); }
+/* Stage-colored S&P 500 chart */
+.pc-box { position: relative; margin-top: 4px; touch-action: pan-y; }
+svg.pc { display: block; width: 100%; height: 320px; direction: ltr; overflow: visible; }
+@media (max-width: 560px) { svg.pc { height: 240px; } }
+svg.pc text { font-family: var(--font-num); font-size: 11px; fill: var(--muted); }
+svg.pc .grid { stroke: var(--line); stroke-width: 1; }
+svg.pc .band-n { font-size: 10.5px; font-weight: 800; }
+.pc-tip { position: absolute; top: 0; pointer-events: none; background: var(--surface); border-radius: 12px; box-shadow: 0 6px 22px rgba(31,43,59,.16); padding: 8px 12px; font-size: 12.5px; line-height: 1.5; white-space: nowrap; z-index: 2; }
+.pc-tip b { font-size: 13.5px; }
+.pc-tip .st { display: block; font-weight: 700; }
+.pc-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin-top: 12px; }
+.pc-legend > span { display: flex; align-items: center; gap: 6px; font-size: 12.5px; background: var(--tint); border-radius: 9px; padding: 5px 10px; min-width: 0; white-space: nowrap; }
+.pc-legend b { font-weight: 700; }
+.pc-legend em { font-style: normal; color: var(--muted); font-size: 11.5px; margin-inline-start: auto; }
+@media (max-width: 560px) { .pc-legend { grid-template-columns: 1fr 1fr; } .pc-legend > span { padding: 5px 8px; gap: 5px; } }
+.pc-legend i { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.pc-legend .r { font-family: var(--font-num); font-weight: 700; }
+.pc-legend .r.pos { color: var(--up); }
+.pc-legend .r.neg { color: var(--down); }
+.pc-legend .vx i { background: none; width: auto; height: auto; color: var(--ink); font-style: normal; font-size: 12px; }
+
 /* Pinned copy of the reading switches: shown once the top bar scrolls away.
    Desktop: one slim row. Phone: a summary chip that opens the switches. */
 .pin-wrap { position: sticky; top: 10px; height: 0; margin-bottom: -24px; z-index: 40; display: flex; justify-content: center; align-items: flex-start; pointer-events: none; }
@@ -819,6 +840,20 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <p class="bt-note" id="deep-note"></p>
     </section>
 
+    <section class="card" id="price-sec">
+      <div class="card-top">
+        <h2 id="t-pc"></h2>
+        <div class="seg" role="group" id="pc-range"></div>
+      </div>
+      <p class="kicker" id="t-pc-sub"></p>
+      <div class="pc-box" id="pc-box">
+        <svg class="pc" id="pc" role="img"></svg>
+        <div class="pc-tip" id="pc-tip" hidden></div>
+      </div>
+      <div class="pc-legend" id="pc-legend"></div>
+      <p class="bt-note" id="pc-note"></p>
+    </section>
+
     <section class="card" id="live">
       <p class="stale" id="stale" hidden></p>
       <div class="live-head">
@@ -1089,7 +1124,7 @@ const T = {
     flipped: "این دارایی جهتش را عوض کرده؛ مرحله بعد ممکن است شروع شده باشد.",
     nextNote: "خلاصه‌ای از الگوهای کلی مدل پرینگ است، نه توصیه سرمایه‌گذاری شخصی.",
     brand: "چرخه شش‌مرحله‌ای",
-    nav: ["امروز", "بعدش چه می‌شود", "خرید عمیق", "قیمت‌های زنده", "جزئیات مرحله", "نمودار چرخه", "دارایی‌ها", "اقتصاد", "تاریخچه", "چرخش بخش‌ها", "آزمون راهبرد", "جدول مراحل"],
+    nav: ["امروز", "بعدش چه می‌شود", "خرید عمیق", "قیمت و مراحل", "قیمت‌های زنده", "جزئیات مرحله", "نمودار چرخه", "دارایی‌ها", "اقتصاد", "تاریخچه", "چرخش بخش‌ها", "آزمون راهبرد", "جدول مراحل"],
     afterT: "بعدش چه می‌شود",
     afterSub: (s, a, b) => `در گذشته، پس از هر پایان ماهی که بازار در ${s} بود، چه اتفاقی افتاد؟ داده ماهانه از ${a} تا ${b}.`,
     afterRetT: "بازده بعدی (میانگین و درصد دفعات مثبت)",
@@ -1146,6 +1181,15 @@ const T = {
     deepNote: "حتی پس از نشانه‌های خوب خرید هم سهام اغلب باز پایین‌تر رفت (تا ۲۴٪ در ۲۰۲۰)، پس خرید پله‌ای بهتر از خرید یک‌جاست. نمونه‌ها کوچک‌اند. بر پایه داده‌های گذشته است، نه توصیه سرمایه‌گذاری شخصی.",
     deepStale: "VIX به‌روز نشد؛ آخرین داده ذخیره‌شده نمایش داده می‌شود.",
     navResearch: "پژوهش", researchT: "پژوهش", researchSub: "این مدل در گذشته چطور عمل کرده است. برای استفاده روزانه لازم نیست.",
+    pcT: "شاخص S&P 500 و مراحل چرخه",
+    pcSub: "رنگ زمینه، مرحله‌ای است که مدل در پایان هر ماه نشان می‌داد (با میانگین متحرک و قانون تأیید انتخاب‌شده). محور قیمت لگاریتمی است تا درصد تغییرها در همه سال‌ها هم‌اندازه دیده شوند.",
+    pcRanges: { 5: "۵ سال", 10: "۱۰ سال", all: "همه" },
+    pcVix: "VIX بالای ۴۰",
+    pcMixed: "مختلط",
+    pcNow: "اکنون",
+    pcMonths: (k) => `${k} ماه`,
+    pcNote: (from) => `درصد کنار هر مرحله: بازده سالانه S&P 500 در ماه‌هایی که در آن مرحله بود، در بازه نمایش‌داده‌شده (از ${from}). فقط وقتی نشان داده می‌شود که آن مرحله دست‌کم ۱۲ ماه طول کشیده باشد. بدون سود نقدی. گذشته تضمینی برای آینده نیست.`,
+    pcAria: "نمودار شاخص S&P 500 با رنگ مرحله هر ماه",
     todayDeep: (lvl, vix, drop) => `سنج خرید عمیق: <b>${lvl}</b> · <bdi dir="ltr">VIX ${vix}</bdi> · <bdi dir="ltr">S&amp;P 500</bdi> ${drop} زیر سقف`,
     chgT: (d) => `از آخرین بازدید شما (داده‌های ${d})`,
     chgNone: "تغییر مهمی رخ نداده است.",
@@ -1375,7 +1419,7 @@ const T = {
     flipped: "This asset has already turned; the next stage may be starting.",
     nextNote: "A summary of general patterns from Pring's model, not personal investment advice.",
     brand: "Six-Stage",
-    nav: ["Today", "What happens next", "Deep buy", "Live prices", "Stage details", "Cycle chart", "Assets", "Economy", "History", "Sector rotation", "Strategy test", "Stage matrix"],
+    nav: ["Today", "What happens next", "Deep buy", "Price & stages", "Live prices", "Stage details", "Cycle chart", "Assets", "Economy", "History", "Sector rotation", "Strategy test", "Stage matrix"],
     afterT: "What happens next",
     afterSub: (s, a, b) => `What happened after every month-end the market spent in ${s}? Monthly data from ${a} to ${b}.`,
     afterRetT: "Returns afterwards (average and share of times positive)",
@@ -1432,6 +1476,15 @@ const T = {
     deepNote: "Even after good buy signals, stocks often fell further first (up to 24% in 2020), so buying in steps beats buying all at once. The samples are small. Based on past data; not personal investment advice.",
     deepStale: "VIX couldn't be refreshed; showing the last saved reading.",
     navResearch: "Research", researchT: "Research", researchSub: "How the model has done in the past. Not needed for daily use.",
+    pcT: "S&P 500 and the cycle stages",
+    pcSub: "The background shows the stage the model gave at each month-end (with the moving average and confirmation rule chosen above). The price axis is logarithmic, so equal percentage moves look the same size in every year.",
+    pcRanges: { 5: "5 yr", 10: "10 yr", all: "All" },
+    pcVix: "VIX above 40",
+    pcMixed: "Mixed",
+    pcNow: "now",
+    pcMonths: (k) => `${k} mo`,
+    pcNote: (from) => `Percent next to each stage: the S&P 500's yearly rate of return during months in that stage, over the range shown (from ${from}). Shown only when the stage lasted at least 12 months in total. Price only, no dividends. The past is no guarantee of the future.`,
+    pcAria: "S&P 500 chart with each month colored by its stage",
     todayDeep: (lvl, vix, drop) => `Deep buy meter: <b>${lvl}</b> · VIX ${vix} · S&amp;P 500 ${drop} below its high`,
     chgT: (d) => `Since your last visit (data of ${d})`,
     chgNone: "Nothing important has changed.",
@@ -1668,6 +1721,7 @@ const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5" opacity=".35" fill="currentColor" stroke="none"/><rect x="13" y="4" width="5" height="16" rx="1.5" opacity=".35" fill="currentColor" stroke="none"/><path d="M3 16l5-5 4 3 9-8"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3-4.5 5-3"/></svg>',
@@ -1678,8 +1732,8 @@ const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l5-7 4 3 8-11"/><path d="M3 21h18"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>',
 ];
-const NAV_IDS = ["today", "after-sec", "deep-sec", "live", "stage-sec", "cycle-sec", "watch-sec", "econ-sec", "hist-sec", "bt-sec", "strat-sec", "matrix-sec"];
-const NAV_RESEARCH_AT = 9;   // a "Research" label goes before this item
+const NAV_IDS = ["today", "after-sec", "deep-sec", "price-sec", "live", "stage-sec", "cycle-sec", "watch-sec", "econ-sec", "hist-sec", "bt-sec", "strat-sec", "matrix-sec"];
+const NAV_RESEARCH_AT = 10;   // a "Research" label goes before this item
 // Stage the summary row describes: the live stage, or the selected one when signals are mixed
 const focusIdx = () => liveStageIdx ?? sel;
 const fitsUp = (s) => WATCH.filter((w) => !w.error && w.stages.includes(s + 1) && wp(w).dir > 0);
@@ -3088,8 +3142,187 @@ function render() {
   document.getElementById("t-note").textContent = t.note;
   document.getElementById("lang-fa").setAttribute("aria-pressed", String(lang === "fa"));
   document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
-  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
+  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawPriceChart(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
 }
+
+// ---- S&P 500 with each month shaded by its stage ----
+let pcRange = "10";
+try { const r = localStorage.getItem("cycle-pc-range"); if (["5", "10", "all"].includes(r)) pcRange = r; } catch (e) {}
+const ymAdd = (ym, k) => { let [y, m] = ym.split("-").map(Number); m += k; y += Math.floor((m - 1) / 12); m = ((m - 1) % 12 + 12) % 12 + 1; return `${y}-${String(m).padStart(2, "0")}`; };
+const ymDiff = (a, b) => { const [y1, m1] = a.split("-").map(Number), [y2, m2] = b.split("-").map(Number); return (y2 - y1) * 12 + (m2 - m1); };
+const STAGE_FILL = (st) => st ? `color-mix(in srgb, var(${st <= 3 ? "--half-c-ink" : "--half-e-ink"}) ${[10, 22, 38][(st - 1) % 3]}%, transparent)` : "transparent";
+
+function pcSeries() {
+  const B = ALL && ALL.backtest;
+  if (!B || !B.spx) return null;
+  const P = B.periods[PK(period)] || B.periods[period];
+  if (!P || !P.stages) return null;
+  // Month-ends from the backtest, then the live reading for months after it
+  const pts = [];
+  P.stages.forEach((st, i) => {
+    const m = ymAdd(P.start, i), j = ymDiff(B.spx.start, m);
+    const v = j >= 0 ? B.spx.v[j] : null;
+    if (v != null) pts.push({ m, v, st });
+  });
+  const last = pts.length ? pts[pts.length - 1].m : null;
+  const H = (DATA && DATA.history) || [];
+  const nowM = DATA && DATA.asOf ? DATA.asOf.slice(0, 7) : null;
+  const L = ALL.deep && ALL.deep.spx;
+  if (nowM && last && nowM > last && L && L.now) {
+    const hr = H.find((r) => r.month === nowM);
+    pts.push({ m: nowM, v: L.now, st: hr ? hr.stage || 0 : (DATA.stage || 0), now: true });
+  }
+  return pts;
+}
+
+function drawPriceChart() {
+  const t = T[lang];
+  const sec = document.getElementById("price-sec");
+  const all = pcSeries();
+  if (!all || all.length < 24) { sec.hidden = true; return; }
+  sec.hidden = false;
+  document.getElementById("t-pc").textContent = t.pcT;
+  document.getElementById("t-pc-sub").textContent = t.pcSub;
+  const rg = document.getElementById("pc-range");
+  rg.replaceChildren();
+  rg.setAttribute("aria-label", t.pcT);
+  Object.entries(t.pcRanges).forEach(([k, lbl]) => {
+    const b = h("button", null, lbl);
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(k === pcRange));
+    b.addEventListener("click", () => { pcRange = k; try { localStorage.setItem("cycle-pc-range", k); } catch (e) {} drawPriceChart(); });
+    rg.append(b);
+  });
+
+  document.getElementById("pc-tip").hidden = true;
+  const pts = pcRange === "all" ? all : all.slice(-(Number(pcRange) * 12 + 1));
+  const svg = document.getElementById("pc");
+  svg.setAttribute("aria-label", t.pcAria);
+  svg.replaceChildren();
+  const W = svg.clientWidth || 800, Hh = svg.clientHeight || 320;
+  svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`);
+  const padL = 8, padR = 46, padT = 18, padB = 26;
+  const n = pts.length;
+  const step = (W - padL - padR) / n;
+  const xL = (i) => padL + i * step;            // left edge of month i's slot
+  const xC = (i) => xL(i) + step / 2;           // centre of the slot
+  const lo = Math.log(Math.min(...pts.map((p) => p.v)) * 0.94), hi = Math.log(Math.max(...pts.map((p) => p.v)) * 1.04);
+  const y = (v) => padT + (1 - (Math.log(v) - lo) / (hi - lo)) * (Hh - padT - padB);
+  const A = (o) => o;
+
+  // Stage bands: one rect per run of the same stage, 1px gap between runs
+  let i0 = 0;
+  for (let i = 1; i <= n; i++) {
+    if (i < n && pts[i].st === pts[i0].st) continue;
+    const st = pts[i0].st, x0 = xL(i0), x1 = xL(i);
+    if (st) {
+      svg.append(el("rect", A({ x: x0, y: padT - 12, width: Math.max(1, x1 - x0 - 1), height: Hh - padB - padT + 12, fill: STAGE_FILL(st), rx: 2 })));
+      if (x1 - x0 >= 13) {
+        const tx = el("text", A({ x: (x0 + x1) / 2, y: padT - 2, "text-anchor": "middle", class: "band-n", style: `fill:var(${st <= 3 ? "--half-c-ink" : "--half-e-ink"})` }), String(st));
+        svg.append(tx);
+      }
+    }
+    i0 = i;
+  }
+
+  // Price grid: nice round levels on the log axis
+  const vmin = Math.exp(lo), vmax = Math.exp(hi);
+  const cands = [];
+  for (let e = 1; e <= 5; e++) [1, 2, 5].forEach((k) => cands.push(k * 10 ** e));
+  let ticks = cands.filter((v) => v >= vmin && v <= vmax);
+  if (ticks.length < 3) {
+    ticks = [];
+    const span = vmax - vmin, raw = span / 4, mag = 10 ** Math.floor(Math.log10(raw)), stp = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((k) => span / k <= 5);
+    for (let v = Math.ceil(vmin / stp) * stp; v <= vmax; v += stp) ticks.push(v);
+  }
+  ticks.forEach((v) => {
+    svg.append(el("line", A({ x1: padL, x2: W - padR, y1: y(v), y2: y(v), class: "grid" })));
+    svg.append(el("text", A({ x: W - padR + 6, y: y(v) + 4 }), t.fmt(v, 0)));
+  });
+  // Year ticks
+  const years = Math.ceil(n / 12), every = years <= 6 ? 1 : years <= 12 ? 2 : 5;
+  // Year marks: January in English; in Persian the solar new year (Farvardin starts around 21 March)
+  const fa = lang === "fa";
+  pts.forEach((p, i) => {
+    if (!p.m.endsWith(fa ? "-03" : "-01")) return;
+    const yr = Number(p.m.slice(0, 4)) - (fa ? 621 : 0);
+    if (yr % every) return;
+    const x = fa ? xL(i) + step * 0.67 : xL(i);
+    svg.append(el("line", A({ x1: x, x2: x, y1: Hh - padB, y2: Hh - padB + 4, stroke: "var(--muted)" })));
+    svg.append(el("text", A({ x, y: Hh - 8, "text-anchor": "middle" }), fa ? yr.toLocaleString("fa-IR", { useGrouping: false }) : String(yr)));
+  });
+
+  // VIX above 40: a marker under the line in the month it happened
+  const S = ALL.backtest.deepbuy;
+  const vixMonths = new Set(((S && S.events) || []).map((e) => e.date.slice(0, 7)));
+  const LV = ALL.deep && ALL.deep.vix;
+  if (LV && Math.max(LV.now, LV.peak || 0) >= 40 && LV.date) vixMonths.add(LV.date.slice(0, 7));
+  pts.forEach((p, i) => {
+    if (!vixMonths.has(p.m)) return;
+    const cx = xC(i), cy = Hh - padB - 7;
+    svg.append(el("path", A({ d: `M${cx - 5} ${cy + 4}L${cx + 5} ${cy + 4}L${cx} ${cy - 5}Z`, fill: "var(--ink)" })));
+    svg.append(el("line", A({ x1: cx, x2: cx, y1: y(p.v) + 4, y2: cy - 6, stroke: "var(--ink)", "stroke-width": 1, "stroke-dasharray": "2 3", opacity: 0.5 })));
+  });
+
+  // Price line
+  const d = pts.map((p, i) => (i ? "L" : "M") + xC(i).toFixed(1) + " " + y(p.v).toFixed(1)).join("");
+  svg.append(el("path", A({ d, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" })));
+  // Latest point
+  const li = n - 1;
+  svg.append(el("circle", A({ cx: xC(li), cy: y(pts[li].v), r: 4.5, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2 })));
+
+  // Crosshair + tooltip
+  const cross = el("line", A({ y1: padT - 12, y2: Hh - padB, stroke: "var(--ink)", "stroke-width": 1, opacity: 0, "pointer-events": "none" }));
+  const dot = el("circle", A({ r: 4.5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0, "pointer-events": "none" }));
+  const hit = el("rect", A({ x: padL, y: 0, width: W - padL - padR, height: Hh, fill: "transparent" }));
+  svg.append(cross, dot, hit);
+  const tip = document.getElementById("pc-tip");
+  const box = document.getElementById("pc-box");
+  const show = (ev) => {
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(n - 1, Math.floor((px - padL) / step)));
+    const p = pts[i];
+    cross.setAttribute("x1", xC(i)); cross.setAttribute("x2", xC(i)); cross.setAttribute("opacity", 0.35);
+    dot.setAttribute("cx", xC(i)); dot.setAttribute("cy", y(p.v)); dot.setAttribute("opacity", 1);
+    const mon = p.now ? t.pcNow + " · " + t.date(DATA.asOf) : new Date(p.m + "-15T12:00:00").toLocaleDateString(lang === "fa" ? "fa-IR" : "en-US", { year: "numeric", month: "short" });
+    tip.innerHTML = `<span>${mon}</span><br><b class="ltr num">${t.fmt(p.v, 0)}</b>`
+      + `<span class="st" style="color:var(${p.st ? (p.st <= 3 ? "--half-c-ink" : "--half-e-ink") : "--muted"})">${p.st ? stageLabel(p.st - 1) + " · " + t.names[p.st - 1] : t.pcMixed}</span>`
+      + (vixMonths.has(p.m) ? `<span>▲ ${t.pcVix}</span>` : "");
+    tip.hidden = false;
+    const bx = box.getBoundingClientRect();
+    const tx = (xC(i) / W) * r.width + (r.left - bx.left);
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(bx.width - tw, tx < bx.width / 2 ? tx + 12 : tx - tw - 12)) + "px";
+  };
+  const hide = () => { tip.hidden = true; cross.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); };
+  hit.addEventListener("pointermove", show);
+  hit.addEventListener("pointerdown", show);
+  hit.addEventListener("pointerleave", hide);
+
+  // Legend: stage colors with the S&P 500's yearly return in that stage over the range shown
+  const by = {};
+  for (let i = 0; i + 1 < n; i++) {
+    const st = pts[i].st;
+    if (!st || pts[i + 1].now) continue;
+    (by[st] = by[st] || []).push(pts[i + 1].v / pts[i].v);
+  }
+  const lg = document.getElementById("pc-legend");
+  lg.innerHTML = [1, 2, 3, 4, 5, 6].map((st) => {
+    const g = by[st];
+    const k = g ? g.length : 0;
+    let r = "";
+    if (k >= 12) {   // yearly figure only from a year or more of months; fewer would blow up a short run
+      const ann = (Math.pow(g.reduce((a, b) => a * b, 1), 12 / k) - 1) * 100;
+      r = `<span class="r ltr ${ann >= 0 ? "pos" : "neg"}">${(ann >= 0 ? "+" : "−") + t.fmt(Math.abs(ann), 0)}%</span>`;
+    }
+    return `<span><i style="background:${STAGE_FILL(st)};box-shadow:inset 0 0 0 1px var(--line)"></i><b>${stageLabel(st - 1)}</b>${r}<em>${t.pcMonths(t.num(k))}</em></span>`;
+  }).join("") + `<span class="vx"><i>▲</i>${t.pcVix}</span>`;
+  const from = new Date(pts[0].m + "-15T12:00:00").toLocaleDateString(lang === "fa" ? "fa-IR" : "en-US", { year: "numeric", month: "short" });
+  document.getElementById("pc-note").textContent = t.pcNote(from);
+}
+let pcResizeT = null;
+window.addEventListener("resize", () => { clearTimeout(pcResizeT); pcResizeT = setTimeout(drawPriceChart, 150); });
 
 // ---- Pinned reading switches ----
 function drawPin() {
