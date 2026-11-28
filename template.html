@@ -327,11 +327,23 @@ body.fa .rec h4 { letter-spacing: 0; font-size: 13px; }
 .watch-tools { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin: -6px 0 16px; }
 .watch-tools p { margin: 0; font-size: 13px; color: var(--muted); max-width: 70ch; }
 .watch-tools label { font-size: 13px; font-weight: 600; display: inline-flex; gap: 8px; align-items: center; cursor: pointer; background: var(--track); padding: 8px 14px; border-radius: 12px; }
+.watch-ctl { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.watch-ctl .seg button { padding: 7px 12px; }
+.watch-tools label.watch-sort { padding: 4px 6px 4px 14px; }
+body.fa .watch-tools label.watch-sort { padding: 4px 14px 4px 6px; }
+.watch-sort select { font: inherit; font-weight: 600; border: 0; border-radius: 9px; background: var(--surface); color: var(--ink); padding: 5px 8px; cursor: pointer; }
+.watch-count { margin: -6px 0 8px; font-size: 12.5px; color: var(--muted); }
+table.watch th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; border-radius: 6px; }
+table.watch th button:hover { color: var(--ink); }
+table.watch th button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+table.watch th button .ar { opacity: .35; font-size: 11px; }
+table.watch th[aria-sort] button { color: var(--ink); }
+table.watch th[aria-sort] button .ar { opacity: 1; color: var(--accent); }
 .table-box { overflow-x: auto; }
 table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 520px; font-size: 14px; direction: ltr; }
 th, td { padding: 11px 12px; text-align: center; border-bottom: 1px solid var(--line); }
 th { font-weight: 600; color: var(--muted); font-size: 13px; }
-table.watch { direction: inherit; min-width: 840px; }
+table.watch { direction: inherit; min-width: 920px; }
 table.watch th, table.watch td { text-align: start; }
 table.watch tr.group td { font-weight: 700; color: var(--muted); font-size: 12px; padding: 16px 12px 6px; border-bottom: 0; letter-spacing: .04em; text-transform: uppercase; }
 body.fa table.watch tr.group td { letter-spacing: 0; font-size: 13px; }
@@ -339,6 +351,7 @@ table.watch tr.fit td { background: var(--sel); }
 table.watch tr.fit td:first-child { border-start-start-radius: 12px; border-end-start-radius: 12px; }
 table.watch tr.fit td:last-child { border-start-end-radius: 12px; border-end-end-radius: 12px; }
 table.watch .sym { font-size: 12px; color: var(--muted); }
+table.watch td.num.warn { color: var(--warn); font-weight: 700; }
 table.watch td.num { direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
 body.fa table.watch td.num { text-align: right; }
 .pos { color: var(--up); }
@@ -575,6 +588,21 @@ body.fa .ov-lbl { letter-spacing: 0; font-size: 13.5px; }
 .today-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 12px; }
 .today-meta span { background: var(--tint); border-radius: 10px; padding: 5px 12px; font-size: 13.5px; color: var(--ink); }
 .today-meta span.warn { background: var(--warn-soft); color: var(--warn); font-weight: 700; }
+.today-meta a.deep { background: var(--tint); border-radius: 10px; padding: 5px 12px; font-size: 13.5px; color: var(--ink); text-decoration: none; display: inline-block; }
+.today-meta a.deep:hover { box-shadow: inset 0 0 0 1.5px var(--dash); }
+.today-meta a.deep b { font-weight: 700; }
+.today-meta a.deep.lv1 b { color: var(--warn); }
+.today-meta a.deep.lv2 b, .today-meta a.deep.lv3 b { color: var(--up); }
+.today-meta a.deep.lv3 { background: var(--up-soft); }
+.since { margin-top: 12px; padding: 12px 14px; border-radius: 14px; border: 1.5px dashed var(--dash); }
+.since h4 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 700; display: flex; gap: 8px; align-items: center; }
+.since h4 svg { width: 16px; height: 16px; flex: none; }
+.since ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.since li { background: var(--tint); border-radius: 10px; padding: 5px 12px; font-size: 13.5px; }
+.since li.pos { background: var(--up-soft); color: var(--up); font-weight: 600; }
+.since li.neg { background: var(--down-soft); color: var(--down); font-weight: 600; }
+.since li.key { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.since p { margin: 0; font-size: 13.5px; color: var(--muted); }
 .today-plan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
 @media (max-width: 760px) { .today-plan { grid-template-columns: 1fr; } }
 .today .ov-grid { margin-top: 20px; }
@@ -695,6 +723,7 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       </div>
       <p class="ov-story" id="ov-story"></p>
       <div class="today-meta" id="today-meta"></div>
+      <div class="since" id="since" hidden></div>
       <div class="ov-months" id="ov-months"></div>
       <div class="today-plan" id="next-grid"></div>
       <div class="ov-grid">
@@ -798,8 +827,12 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <h2 id="t-watch"></h2>
       <div class="watch-tools">
         <p id="t-watch-hint"></p>
-        <label><input type="checkbox" id="watch-only"> <span id="t-watch-only"></span></label>
+        <div class="watch-ctl">
+          <div class="seg" role="group" id="watch-filter"></div>
+          <label class="watch-sort"><span id="t-watch-sort"></span> <select id="watch-sort"></select></label>
+        </div>
       </div>
+      <p class="watch-count" id="watch-count"></p>
       <div class="table-box"><table class="watch" id="watch"></table></div>
     </section>
 
@@ -1078,6 +1111,17 @@ const T = {
     deepNote: "حتی پس از نشانه‌های خوب خرید هم سهام اغلب باز پایین‌تر رفت (تا ۲۴٪ در ۲۰۲۰)، پس خرید پله‌ای بهتر از خرید یک‌جاست. نمونه‌ها کوچک‌اند. بر پایه داده‌های گذشته است، نه توصیه سرمایه‌گذاری شخصی.",
     deepStale: "VIX به‌روز نشد؛ آخرین داده ذخیره‌شده نمایش داده می‌شود.",
     navResearch: "پژوهش", researchT: "پژوهش", researchSub: "این مدل در گذشته چطور عمل کرده است. برای استفاده روزانه لازم نیست.",
+    todayDeep: (lvl, vix, drop) => `سنج خرید عمیق: <b>${lvl}</b> · <bdi dir="ltr">VIX ${vix}</bdi> · <bdi dir="ltr">S&amp;P 500</bdi> ${drop} زیر سقف`,
+    chgT: (d) => `از آخرین بازدید شما (داده‌های ${d})`,
+    chgNone: "تغییر مهمی رخ نداده است.",
+    chgFirst: "این دستگاه خوانش امروز را به خاطر می‌سپارد. در بازدید بعدی، تغییرات اینجا نشان داده می‌شود.",
+    chgStage: (a, b) => `مرحله: ${a} ← ${b}`,
+    chgStageSame: (a) => `مرحله تغییری نکرده: ${a}`,
+    chgUp: (list) => `صعودی شد ↑: ${list}`,
+    chgDown: (list) => `نزولی شد ↓: ${list}`,
+    chgVix: (a, b) => `شاخص ترس <bdi dir="ltr">VIX</bdi>: ${a} ← ${b}`,
+    chgScore: (a, b) => `امتیاز اقتصاد: ${a} ← ${b}`,
+    chgDeep: (a, b) => `سنج خرید عمیق: ${a} ← ${b}`,
     todayT: "امروز", breadth: (k, n) => `${k} از ${n} دارایی صعودی‌اند.`,
     ruleLbl: "تأیید سیگنال:",
     ruleOpt: { raw: "بدون تأیید", band: "باند ۲٪", hold: "ماندن ۱ ماه" },
@@ -1184,7 +1228,12 @@ const T = {
     watchTitle: "دارایی‌ها و مراحل قوی آن‌ها",
     watchHint: "ردیف‌های برجسته معمولاً در مرحله انتخاب‌شده قوی‌اند. روند و فاصله با میانگین انتخاب‌شده در بالای صفحه حساب می‌شود.",
     watchOnly: "فقط دارایی‌های مرحله انتخاب‌شده",
-    cols: ["دارایی", "مراحل قوی", "روند", "فاصله از میانگین", "بازده ۳ ماه", "بازده ۱۲ ماه", "وضعیت در این مرحله"],
+    cols: ["دارایی", "مراحل قوی", "روند", "فاصله از میانگین", "تا تغییر روند", "بازده ۳ ماه", "بازده ۱۲ ماه", "وضعیت در این مرحله"],
+    watchFilters: { all: "همه", fit: "مناسب", up: "صعودی", down: "نزولی" },
+    watchSortL: "مرتب‌سازی",
+    watchSorts: { def: "بر اساس گروه", name: "نام", trend: "روند (صعودی اول)", gap: "فاصله از میانگین", flip: "نزدیک‌ترین به تغییر روند", m3: "بازده ۳ ماه", m12: "بازده ۱۲ ماه" },
+    watchCount: (k, n) => `${k} از ${n} دارایی نمایش داده می‌شود.`,
+    watchSortBy: (c) => `مرتب‌سازی بر اساس ${c}`,
     fit: { good: "مناسب این مرحله و صعودی", warn: "مناسب این مرحله، هنوز صعودی نیست", off: "صعودی، خارج از مرحله معمولش", out: "خارج از مرحله معمول" },
     groups: { bonds: "اوراق قرضه", stocks: "شاخص‌های سهام", sectors: "بخش‌های بازار سهام", metals: "فلزات", commodities: "کالاها و انرژی", currency: "ارز" },
     noData: "داده دریافت نشد",
@@ -1348,6 +1397,17 @@ const T = {
     deepNote: "Even after good buy signals, stocks often fell further first (up to 24% in 2020), so buying in steps beats buying all at once. The samples are small. Based on past data; not personal investment advice.",
     deepStale: "VIX couldn't be refreshed; showing the last saved reading.",
     navResearch: "Research", researchT: "Research", researchSub: "How the model has done in the past. Not needed for daily use.",
+    todayDeep: (lvl, vix, drop) => `Deep buy meter: <b>${lvl}</b> · VIX ${vix} · S&amp;P 500 ${drop} below its high`,
+    chgT: (d) => `Since your last visit (data of ${d})`,
+    chgNone: "Nothing important has changed.",
+    chgFirst: "This device will remember today's reading. On your next visit, what changed will show here.",
+    chgStage: (a, b) => `Stage: ${a} → ${b}`,
+    chgStageSame: (a) => `Stage unchanged: ${a}`,
+    chgUp: (list) => `Turned up ↑: ${list}`,
+    chgDown: (list) => `Turned down ↓: ${list}`,
+    chgVix: (a, b) => `VIX: ${a} → ${b}`,
+    chgScore: (a, b) => `Economy score: ${a} → ${b}`,
+    chgDeep: (a, b) => `Deep buy meter: ${a} → ${b}`,
     todayT: "Today", breadth: (k, n) => `${k} of ${n} assets are rising.`,
     ruleLbl: "Confirmation:",
     ruleOpt: { raw: "None", band: "2% band", hold: "Hold 1 mo" },
@@ -1454,7 +1514,12 @@ const T = {
     watchTitle: "Assets and their strong stages",
     watchHint: "Highlighted rows are usually strong in the selected stage. Trend and gap use the moving average chosen at the top of the page.",
     watchOnly: "Only assets for the selected stage",
-    cols: ["Asset", "Strong in stages", "Trend", "Gap from avg", "3-mo return", "12-mo return", "Fit for this stage"],
+    cols: ["Asset", "Strong in stages", "Trend", "Gap from avg", "To flip", "3-mo return", "12-mo return", "Fit for this stage"],
+    watchFilters: { all: "All", fit: "Fits", up: "Rising", down: "Falling" },
+    watchSortL: "Sort",
+    watchSorts: { def: "By group", name: "Name", trend: "Trend (rising first)", gap: "Gap from average", flip: "Closest to flipping", m3: "3-month return", m12: "12-month return" },
+    watchCount: (k, n) => `Showing ${k} of ${n} assets.`,
+    watchSortBy: (c) => `Sort by ${c}`,
     fit: { good: "Fits this stage, rising", warn: "Fits this stage, not rising yet", off: "Rising outside its usual stage", out: "Outside its usual stage" },
     groups: { bonds: "Bonds", stocks: "Stock indexes", sectors: "Stock sectors", metals: "Metals", commodities: "Commodities and energy", currency: "Currency" },
     noData: "No data",
@@ -1731,6 +1796,15 @@ function drawNext() {
   }
   const ok = WATCH.filter((w) => !w.error);
   if (ok.length) fact(t.breadth(t.num(ok.filter((w) => wp(w).dir > 0).length), t.num(ok.length)));
+  const ds = deepState();
+  if (ds) {
+    const a = h("a", "deep lv" + ds.lv);
+    a.href = "#deep-sec";
+    const ltr = (v) => `<span class="ltr num">${v}</span>`;
+    a.innerHTML = t.todayDeep(t.deepLevels[ds.lv], t.fmt(ds.L.vix.now, 1), ltr(t.fmt(ds.drop, 1) + "%"));
+    meta.append(a);
+  }
+  drawSince();
 
   // Two plan boxes: what to do now, and how to get ready for the next stage
   const grid = document.getElementById("next-grid");
@@ -1756,9 +1830,74 @@ function drawNext() {
   document.getElementById("next-note").textContent = t.nextNote;
 }
 
+// ---- "Since your last visit": a snapshot kept in this browser only ----
+// cur = the reading seen on the latest visit; prev = the reading from the visit before new data arrived.
+function makeSnap() {
+  const keys = Object.keys(ALL.periods);
+  const snap = { asOf: ALL.asOf, stage: {}, deep: {}, dirs: {}, vix: ALL.deep && ALL.deep.vix ? ALL.deep.vix.now : null, score: ALL.macro ? ALL.macro.score : null };
+  keys.forEach((k) => {
+    snap.stage[k] = ALL.periods[k].stage || 0;
+    const d = deepState(ALL.periods[k]);
+    if (d) snap.deep[k] = d.lv;
+  });
+  WATCH.forEach((w) => { if (!w.error) { snap.dirs[w.symbol] = {}; keys.forEach((k) => { if (w.periods[k]) snap.dirs[w.symbol][k] = w.periods[k].dir; }); } });
+  return snap;
+}
+let VISIT = null;
+function visitState() {
+  if (VISIT || !ALL) return VISIT;
+  VISIT = { prev: null };
+  try {
+    const old = JSON.parse(localStorage.getItem("cycle-visit") || "null");
+    const now = makeSnap();
+    if (old && old.cur && old.cur.asOf !== now.asOf) VISIT = { prev: old.cur, cur: now };
+    else if (old && old.cur) VISIT = { prev: old.prev || null, cur: old.cur };
+    else VISIT = { prev: null, cur: now };
+    localStorage.setItem("cycle-visit", JSON.stringify(VISIT));
+  } catch (e) {}
+  return VISIT;
+}
+function drawSince() {
+  const t = T[lang];
+  const box = document.getElementById("since");
+  const V = visitState();
+  if (!V || !V.cur) { box.hidden = true; return; }
+  box.hidden = false;
+  const escH = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>';
+  const P = V.prev;
+  if (!P) { box.innerHTML = `<p>${escH(t.chgFirst)}</p>`; return; }
+  const k = PK(period);
+  const ltr = (v) => `<span class="ltr num">${escH(v)}</span>`;
+  const sl = (st) => (st ? stageLabel(st - 1) : t.statMixed);
+  const items = [];
+  const add = (txt, cls) => items.push(`<li${cls ? ` class="${cls}"` : ""}>${txt}</li>`);
+  let changed = false;
+  const a = P.stage ? P.stage[k] : undefined, b = DATA.stage || 0;
+  if (a !== undefined && a !== b) { add(escH(t.chgStage(sl(a), sl(b))), "key"); changed = true; }
+  else add(escH(t.chgStageSame(sl(b))));
+  const da = P.deep ? P.deep[k] : undefined, ds = deepState();
+  if (da !== undefined && ds && da !== ds.lv) { add(escH(t.chgDeep(t.deepLevels[da], t.deepLevels[ds.lv])), "key"); changed = true; }
+  const ups = [], downs = [];
+  WATCH.forEach((w) => {
+    if (w.error || !P.dirs || !P.dirs[w.symbol]) return;
+    const was = P.dirs[w.symbol][k], now = wp(w).dir;
+    if (was && now && was !== now) (now > 0 ? ups : downs).push(w);
+  });
+  const names = (arr) => arr.map((w) => `<span class="ltr" title="${escH(w[lang])}">${escH(w.symbol)}</span>`).join(lang === "fa" ? "، " : ", ");
+  if (ups.length) { add(t.chgUp(names(ups)), "pos"); changed = true; }
+  if (downs.length) { add(t.chgDown(names(downs)), "neg"); changed = true; }
+  const vNow = ALL.deep && ALL.deep.vix ? ALL.deep.vix.now : null;
+  if (P.vix != null && vNow != null && Math.abs(vNow - P.vix) >= 0.5) { add(t.chgVix(ltr(t.fmt(P.vix, 1)), ltr(t.fmt(vNow, 1)))); changed = true; }
+  const sNow = ALL.macro ? ALL.macro.score : null;
+  if (P.score != null && sNow != null && P.score !== sNow) { add(t.chgScore(ltr(signed(P.score, 0)), ltr(signed(sNow, 0)))); changed = true; }
+  if (!changed) add(escH(t.chgNone));
+  box.innerHTML = `<h4>${icon}<span>${escH(t.chgT(t.date(P.asOf)))}</span></h4><ul>${items.join("")}</ul>`;
+}
+
 function showAssets(onlyFit) {
   if (onlyFit && liveStageIdx != null && sel !== liveStageIdx) select(liveStageIdx);
-  document.getElementById("watch-only").checked = onlyFit;
+  setWatch({ filter: onlyFit ? "fit" : "all" });
   drawWatch();
   document.getElementById("watch-sec").scrollIntoView();
 }
@@ -2007,24 +2146,100 @@ function drawDetail() {
 const pct = (v) => (v == null ? "–" : (v > 0 ? "+" : "") + T[lang].fmt(v) + "%");
 const sign = (v) => (v == null ? "" : v >= 0 ? " pos" : " neg");
 
+// Watchlist filter and sort, remembered in this browser
+let watchCfg = { filter: "all", sort: "def", desc: true };
+try { const c = JSON.parse(localStorage.getItem("cycle-watch") || "null"); if (c) watchCfg = Object.assign(watchCfg, c); } catch (e) {}
+const WATCH_SORTS = ["def", "name", "trend", "gap", "flip", "m3", "m12"];
+// column index → sort key (columns without a key are not sortable)
+const WATCH_COL_SORT = ["name", null, "trend", "gap", "flip", "m3", "m12", null];
+function setWatch(c) {
+  Object.assign(watchCfg, c);
+  try { localStorage.setItem("cycle-watch", JSON.stringify(watchCfg)); } catch (e) {}
+  drawWatch();
+}
+// % move needed before an asset's trend flips under the current confirmation rule
+function flipGap(p) {
+  const thr = rule === "band" ? 2 : 0;
+  return p.dir > 0 ? Math.max(0, p.gap + thr) : Math.max(0, thr - p.gap);
+}
+
 function drawWatch() {
   const t = T[lang];
   const sec = document.getElementById("watch-sec");
   if (!WATCH.length) { sec.hidden = true; return; }
   document.getElementById("t-watch").textContent = t.watchTitle;
   document.getElementById("t-watch-hint").textContent = t.watchHint;
-  document.getElementById("t-watch-only").textContent = t.watchOnly;
-  const only = document.getElementById("watch-only").checked;
+
+  // Filter buttons
+  const fb = document.getElementById("watch-filter");
+  fb.replaceChildren();
+  fb.setAttribute("aria-label", t.watchTitle);
+  Object.entries(t.watchFilters).forEach(([k, lbl]) => {
+    const b = h("button", k === "up" ? "up" : k === "down" ? "down" : null, k === "fit" ? lbl + " " + stageLabel(sel) : lbl);
+    b.type = "button";
+    b.title = k === "fit" ? lbl + " " + stageLabel(sel) : lbl;
+    b.setAttribute("aria-pressed", String(watchCfg.filter === k));
+    b.addEventListener("click", () => setWatch({ filter: k }));
+    fb.append(b);
+  });
+  // Sort menu
+  document.getElementById("t-watch-sort").textContent = t.watchSortL;
+  const ss = document.getElementById("watch-sort");
+  ss.title = t.watchSortL;
+  ss.replaceChildren();
+  WATCH_SORTS.forEach((k) => { const o = h("option", null, t.watchSorts[k]); o.value = k; ss.append(o); });
+  ss.value = watchCfg.sort;
+
+  const fitOf = (w) => w.stages.includes(sel + 1);
+  const keep = (w) => {
+    const f = watchCfg.filter;
+    if (f === "fit") return fitOf(w);
+    if (f === "up" || f === "down") return !w.error && wp(w).dir === (f === "up" ? 1 : -1);
+    return true;
+  };
+  let rows = WATCH.filter(keep);
+  const S = watchCfg.sort, dsc = watchCfg.desc ? 1 : -1;
+  if (S !== "def") {
+    const val = (w) => {
+      const p = wp(w);
+      if (S === "trend") return p.dir * 1000 + p.gap;
+      if (S === "gap") return p.gap;
+      if (S === "flip") return -flipGap(p);       // closest to flipping first
+      if (S === "m3") return w.ret.m3 ?? -Infinity;
+      if (S === "m12") return w.ret.m12 ?? -Infinity;
+      return 0;
+    };
+    rows = [...rows].sort((x, y) => {
+      if (x.error || y.error) return (x.error ? 1 : 0) - (y.error ? 1 : 0);
+      if (S === "name") return dsc * x[lang].localeCompare(y[lang], lang);
+      return dsc * (val(y) - val(x));
+    });
+  }
+  document.getElementById("watch-count").textContent = t.watchCount(t.num(rows.length), t.num(WATCH.length));
+
   const tb = document.getElementById("watch");
   tb.replaceChildren();
   const head = h("tr");
-  t.cols.forEach((c) => head.append(h("th", null, c)));
+  t.cols.forEach((c, i) => {
+    const th = h("th");
+    const key = WATCH_COL_SORT[i];
+    if (!key) { th.textContent = c; head.append(th); return; }
+    const on = S === key;
+    if (on) th.setAttribute("aria-sort", watchCfg.desc ? "descending" : "ascending");
+    const b = h("button");
+    b.type = "button";
+    b.title = t.watchSortBy(c);
+    b.append(h("span", null, c), h("span", "ar", on ? (watchCfg.desc ? "▼" : "▲") : "↕"));
+    // first click: the most useful order (A→Z, rising first, closest to flip, best return); second click reverses
+    b.addEventListener("click", () => setWatch(on ? { desc: !watchCfg.desc } : { sort: key, desc: true }));
+    th.append(b);
+    head.append(th);
+  });
   tb.append(head);
   let group = null;
-  WATCH.forEach((w) => {
-    const inFavor = w.stages.includes(sel + 1);
-    if (only && !inFavor) return;
-    if (w.group !== group) {
+  rows.forEach((w) => {
+    const inFavor = fitOf(w);
+    if (S === "def" && w.group !== group) {
       group = w.group;
       const gr = h("tr", "group");
       const td = h("td", null, t.groups[group] || group);
@@ -2052,9 +2267,11 @@ function drawWatch() {
     const trendTd = h("td");
     trendTd.append(h("span", "pill " + (up ? "up" : "down"), (up ? "↑ " + t.rising : "↓ " + t.falling)));
     const [key, cls] = inFavor ? (up ? ["good", "good"] : ["warn", "warn"]) : (up ? ["off", "muted"] : ["out", "muted"]);
+    const fg = flipGap(p);
     tr.append(
       trendTd,
       h("td", "num" + sign(p.gap), pct(p.gap)),
+      h("td", "num" + (fg < 1 ? " warn" : ""), t.fmt(fg, 1) + "%"),
       h("td", "num" + sign(w.ret.m3), pct(w.ret.m3)),
       h("td", "num" + sign(w.ret.m12), pct(w.ret.m12)),
       h("td", "fitlbl " + cls, t.fit[key]),
@@ -2062,7 +2279,7 @@ function drawWatch() {
     tb.append(tr);
   });
 }
-document.getElementById("watch-only").addEventListener("change", drawWatch);
+document.getElementById("watch-sort").addEventListener("change", (e) => setWatch({ sort: e.target.value, desc: true }));
 
 // ---- Sector rotation chart + backtest ----
 // [ticker, English short name, Persian short name, stage the textbook rotation chart puts it in]
@@ -2702,6 +2919,30 @@ document.getElementById("after-pick").addEventListener("click", (e) => {
 });
 
 // ---- Deep buy meter: fear (VIX), price (S&P 500 below its high), cycle filter, and the history behind it ----
+// Deep buy meter level, shared by the Deep buy section and the Today card
+function deepState(D = DATA) {
+  const L = ALL && ALL.deep;
+  if (!L || !L.vix || !L.spx || !D) return null;
+  // 1. Fear: the higher of today's VIX and its highest close of the last month
+  const fearV = Math.max(L.vix.now, L.vix.peak || 0);
+  const fearLv = fearV >= 40 ? 3 : fearV >= 30 ? 2 : fearV >= 20 ? 1 : 0;
+  // 2. Price: how far the S&P 500 is below its all-time high
+  const drop = Math.max(0, -L.spx.drop);
+  const dropLv = drop >= 30 ? 3 : drop >= 20 ? 2 : drop >= 10 ? 1 : 0;
+  // 3. Cycle: the reading the page is showing
+  const stg = D.stage;
+  const Hs = D.history || [];
+  let since = 0;
+  if (stg === 2) for (let i = Hs.length - 1; i >= 0 && Hs[i].stage === 2; i--) since++;
+  const cyc = stg === 2 && since <= 2 ? "fresh" : [2, 3, 4].includes(stg) ? "healthy" : stg === 5 ? "late" : stg ? "down" : "mixed";
+  let lv = 0, wait = false;
+  if (cyc === "fresh" || (fearLv === 3 && cyc === "healthy")) lv = 3;
+  else if (dropLv === 3) lv = 2;
+  else if (fearLv === 3 && (cyc === "down" || cyc === "mixed")) { lv = 1; wait = true; }
+  else if (fearLv >= 2 || dropLv >= 1 || stg === 1) lv = 1;
+  return { L, fearV, fearLv, drop, dropLv, stg, since, cyc, lv, wait };
+}
+
 function drawDeep() {
   const t = T[lang];
   const sec = document.getElementById("deep-sec");
@@ -2713,25 +2954,7 @@ function drawDeep() {
   const pc = (v, d = 1) => `<span class="ltr num">${(v > 0 ? "+" : v < 0 ? "−" : "") + t.fmt(Math.abs(v), d)}%</span>`;
   const upK = (s) => Math.round((s.pos * s.n) / 100);
 
-  // 1. Fear: the higher of today's VIX and its highest close of the last month
-  const fearV = Math.max(L.vix.now, L.vix.peak || 0);
-  const fearLv = fearV >= 40 ? 3 : fearV >= 30 ? 2 : fearV >= 20 ? 1 : 0;
-  // 2. Price: how far the S&P 500 is below its all-time high
-  const drop = Math.max(0, -L.spx.drop);
-  const dropLv = drop >= 30 ? 3 : drop >= 20 ? 2 : drop >= 10 ? 1 : 0;
-  // 3. Cycle: the reading the page is showing
-  const stg = DATA.stage;
-  const Hs = DATA.history || [];
-  let since = 0;
-  if (stg === 2) for (let i = Hs.length - 1; i >= 0 && Hs[i].stage === 2; i--) since++;
-  const cyc = stg === 2 && since <= 2 ? "fresh" : [2, 3, 4].includes(stg) ? "healthy" : stg === 5 ? "late" : stg ? "down" : "mixed";
-
-  let lv = 0, wait = false;
-  if (cyc === "fresh" || (fearLv === 3 && cyc === "healthy")) lv = 3;
-  else if (dropLv === 3) lv = 2;
-  else if (fearLv === 3 && (cyc === "down" || cyc === "mixed")) { lv = 1; wait = true; }
-  else if (fearLv >= 2 || dropLv >= 1 || stg === 1 || fearLv === 3) lv = 1;
-
+  const { fearV, fearLv, drop, dropLv, stg, since, cyc, lv, wait } = deepState();
   document.getElementById("t-deep").textContent = t.deepT;
   document.getElementById("t-deep-sub").textContent = t.deepSub(t.num(Number(S ? S.from : 1990)).replace(/[٬,]/g, ""));
   const pill = document.getElementById("deep-pill");
