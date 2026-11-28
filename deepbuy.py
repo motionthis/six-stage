@@ -56,6 +56,26 @@ def fetch_daily(symbol, start=START, retries=3):
     return sorted(out.items())
 
 
+def fetch_intraday(symbol, rng, interval, retries=3):
+    """Intraday bars as {"t": [unix seconds], "v": [value]} for the chart's Today / Week views."""
+    url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.request.quote(symbol)}"
+           f"?range={rng}&interval={interval}")
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    last = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                result = json.load(resp)["chart"]["result"][0]
+            break
+        except Exception as exc:
+            last = exc
+            time.sleep(2 * (attempt + 1))
+    else:
+        raise last
+    pts = [(t, round(c, 2)) for t, c in zip(result.get("timestamp") or [], result["indicators"]["quote"][0]["close"]) if c is not None]
+    return {"t": [t for t, _ in pts], "v": [v for _, v in pts]}
+
+
 def _r(x, d=2):
     return None if x is None else round(x, d)
 
@@ -73,6 +93,15 @@ def live(vix=None, spx=None):
     spark = year[::step] if (len(year) - 1) % step == 0 else year[::step] + [year[-1]]
     high_d, high_v = max(spx, key=lambda x: x[1])
     now_d, now_v = spx[-1]
+    five = vix[-1260:]                                      # about five years of daily closes
+    intra = {}
+    for key, rng, iv in (("day", "1d", "5m"), ("week", "5d", "30m")):
+        try:
+            got = fetch_intraday("^VIX", rng, iv)
+            if len(got["t"]) > 3:
+                intra[key] = got
+        except Exception:
+            pass                                            # the chart falls back to daily closes
     return {
         "vix": {
             "now": _r(vv[-1]), "date": vd[-1],
@@ -80,6 +109,8 @@ def live(vix=None, spx=None):
             "yearHigh": _r(max(v for _, v in year)),
             "last40": above[-1] if above else None,              # last close above 40
             "spark": {"dates": [d for d, _ in spark], "v": [_r(v, 1) for _, v in spark]},
+            "hist": {"d": [d for d, _ in five], "v": [_r(v, 2) for _, v in five]},   # chart: Month to 5 years
+            "intra": intra,                                                         # chart: Today and Week
         },
         "spx": {"now": _r(now_v), "date": now_d, "high": _r(high_v), "highDate": high_d,
                 "drop": _r((now_v / high_v - 1) * 100)},

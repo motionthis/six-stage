@@ -138,6 +138,17 @@ nav a.on svg { color: var(--accent); }
 
 /* Top bar */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; background: var(--surface); border-radius: 18px; padding: 14px 22px; box-shadow: var(--shadow); }
+/* Interactive VIX chart in the Deep buy section */
+.vx-block { margin-top: 18px; }
+.vx-block .card-top { margin-bottom: 6px; }
+.vx-block .seg button { padding: 7px 11px; }
+.vx-block .seg button:disabled { opacity: .4; cursor: default; }
+.vx-block .bt-note { margin-bottom: 22px; }
+.vx-stats { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+.vx-stats b { color: var(--ink); font-family: var(--font-num); }
+svg.pc.vx { height: 260px; }
+@media (max-width: 560px) { svg.pc.vx { height: 220px; } .vx-block .seg button { padding: 6px 8px; font-size: 12px; } }
+
 /* Stage-colored S&P 500 chart */
 .pc-box { position: relative; margin-top: 4px; touch-action: pan-y; }
 svg.pc { display: block; width: 100%; height: 320px; direction: ltr; overflow: visible; }
@@ -859,6 +870,18 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <div class="deep-zones" id="deep-zones"></div>
       <p class="deep-verdict" id="deep-verdict"></p>
       <div class="deep-checks" id="deep-checks"></div>
+      <div class="vx-block" id="vx-block">
+        <div class="card-top">
+          <h3 class="bt-sub" id="t-vx"></h3>
+          <div class="seg" role="group" id="vx-range"></div>
+        </div>
+        <p class="vx-stats" id="vx-stats"></p>
+        <div class="pc-box" id="vx-box">
+          <svg class="pc vx" id="vx" role="img"></svg>
+          <div class="pc-tip" id="vx-tip" hidden></div>
+        </div>
+        <p class="bt-note" id="vx-note"></p>
+      </div>
       <div class="after-grid deep-ev">
         <div>
           <div class="ov-lbl" id="t-deep-ev"></div>
@@ -1213,6 +1236,14 @@ const T = {
     deepFear: (now, peak, d) => `VIX امروز ${now}. بالاترین بسته‌شدن در یک ماه اخیر: ${peak} (${d}).`,
     deepFearLv: ["آرام (زیر ۲۰)", "نگران (۲۰ تا ۳۰)", "ترس بالا (۳۰ تا ۴۰)", "ترس شدید (بالای ۴۰)"],
     deepSpark: "VIX در یک سال اخیر؛ خط‌چین‌ها: ۳۰ و ۴۰",
+    vxT: "نمودار VIX (شاخص ترس بازار)",
+    vxRanges: { day: "امروز", week: "هفته", month: "ماه", year: "سال", y3: "۳ سال", y5: "۵ سال" },
+    vxZone: { calm: "آرام", watch: "نگرانی", high: "ترس زیاد", fear: "ترس شدید" },
+    vxStats: (now, hi, lo, chg) => `آخرین ${now} · بیشترین ${hi} · کمترین ${lo} · تغییر در این بازه ${chg}`,
+    vxNy: "(وقت نیویورک)",
+    vxNoIntra: "داده درون‌روزی در دسترس نیست",
+    vxIntraNote: "امروز و هفته: داده‌های درون‌روزی آخرین جلسه‌های معاملاتی تا زمان ساخت صفحه (روزی یک بار)، نه قیمت زنده.",
+    vxNote: "بالای ۳۰ (زرد): ترس زیاد. بالای ۴۰ (سبز): ترس شدید، که در مراحل ۲ تا ۴ معمولاً فرصت خرید بوده است. روی نمودار بزنید یا نشانگر را حرکت دهید تا عدد هر روز را ببینید.",
     deepPriceT: "قیمت (S&P 500)",
     deepPrice: (drop, d) => `${drop} پایین‌تر از سقف خود در ${d}.`,
     deepPriceLv: ["نزدیک سقف (کمتر از ۱۰٪)", "اصلاح (۱۰ تا ۲۰٪)", "بازار نزولی (۲۰ تا ۳۰٪)", "تخفیف عمیق (بیش از ۳۰٪)"],
@@ -1523,6 +1554,14 @@ const T = {
     deepFear: (now, peak, d) => `VIX is ${now} today. Highest close in the last month: ${peak} (${d}).`,
     deepFearLv: ["Calm (under 20)", "Nervous (20–30)", "High fear (30–40)", "Extreme fear (40+)"],
     deepSpark: "VIX over the past year; dashed lines at 30 and 40",
+    vxT: "VIX chart (the market's fear gauge)",
+    vxRanges: { day: "Today", week: "Week", month: "Month", year: "Year", y3: "3 yr", y5: "5 yr" },
+    vxZone: { calm: "Calm", watch: "Worry", high: "High fear", fear: "Extreme fear" },
+    vxStats: (now, hi, lo, chg) => `Last ${now} · high ${hi} · low ${lo} · change over this range ${chg}`,
+    vxNy: "(New York time)",
+    vxNoIntra: "Intraday data not available",
+    vxIntraNote: "Today and Week: intraday data from the latest sessions as of the page build (once a day), not live prices.",
+    vxNote: "Above 30 (yellow): high fear. Above 40 (green): extreme fear, which in stages 2–4 has usually been a buying chance. Tap or move over the chart to see any day's value.",
     deepPriceT: "Price (S&P 500)",
     deepPrice: (drop, d) => `${drop} below its high of ${d}.`,
     deepPriceLv: ["Near the high (under 10%)", "Correction (10–20%)", "Bear market (20–30%)", "Deep discount (30%+)"],
@@ -3236,19 +3275,6 @@ function drawDeep() {
     `<div class="z${i}${i === lv ? " on" : ""}"${i === lv ? ' aria-current="true"' : ""}><i></i>${x}</div>`).join("");
   document.getElementById("deep-verdict").textContent = wait ? t.deepWait : t.deepVerdict[lv];
 
-  // VIX sparkline with the 30 and 40 lines
-  const sv = (L.vix.spark && L.vix.spark.v) || [];
-  let spark = "";
-  if (sv.length > 1) {
-    const top = Math.max(45, ...sv) * 1.05, W = 300, H = 56;
-    const y = (v) => (H - (v / top) * H).toFixed(1);
-    const pts = sv.map((v, i) => `${((i / (sv.length - 1)) * W).toFixed(1)},${y(v)}`).join(" ");
-    spark = `<svg class="deep-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-      <line x1="0" x2="${W}" y1="${y(30)}" y2="${y(30)}" stroke="var(--warn)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
-      <line x1="0" x2="${W}" y1="${y(40)}" y2="${y(40)}" stroke="var(--up)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
-      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>
-      <span class="deep-spark-l">${t.deepSpark}</span>`;
-  }
   let cycTxt;
   const sl = stg ? stageLabel(stg - 1) : "";
   if (cyc === "fresh") cycTxt = t.deepFresh(t.num(since));
@@ -3264,7 +3290,7 @@ function drawDeep() {
   const cycLvCls = { fresh: 3, healthy: 2, late: 1, down: 0, mixed: 0 }[cyc];
   const box = (title, cls, label, body) => `<div class="after-box"><h4>${title}</h4><span class="dlv lv${cls}">${label}</span><p>${body}</p></div>`;
   document.getElementById("deep-checks").innerHTML =
-    box(t.deepFearT, fearLv, t.deepFearLv[fearLv], t.deepFear(n1(L.vix.now), n1(L.vix.peak), t.date(L.vix.peakDate))) .replace("</p></div>", `</p>${spark}</div>`) +
+    box(t.deepFearT, fearLv, t.deepFearLv[fearLv], t.deepFear(n1(L.vix.now), n1(L.vix.peak), t.date(L.vix.peakDate))) +
     box(t.deepPriceT, dropLv, t.deepPriceLv[dropLv], t.deepPrice(`<span class="ltr num">${t.fmt(drop, 1)}%</span>`, t.date(L.spx.highDate))) +
     box(t.deepCycleT, cycLvCls, t.deepCycleLv[cyc], cycTxt);
 
@@ -3297,6 +3323,7 @@ function drawDeep() {
     document.getElementById("deep-facts").innerHTML = f.map((x) => `<li>${x}</li>`).join("");
   }
   document.getElementById("deep-note").textContent = t.deepNote;
+  drawVix();
 }
 
 function select(i, focus) {
@@ -3320,6 +3347,117 @@ function render() {
   document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
   drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawPriceChart(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawPlaybook(); drawBacktest(); drawStrategy(); drawHistory();
 }
+
+// ---- Interactive VIX chart (Deep buy section) ----
+let vxRange = "year";
+try { const r = localStorage.getItem("cycle-vx-range"); if (["day", "week", "month", "year", "y3", "y5"].includes(r)) vxRange = r; } catch (e) {}
+const VX_DAYS = { month: 21, year: 252, y3: 756, y5: 1260 };
+function vxSeries(V, k) {
+  if (k === "day" || k === "week") {
+    const I = V.intra && V.intra[k];
+    if (!I || !I.t || I.t.length < 4) return null;
+    return I.t.map((tt, i) => ({ x: tt * 1000, v: I.v[i], intra: true }));
+  }
+  const Hd = V.hist;
+  if (!Hd || !Hd.d.length) return null;
+  const n = VX_DAYS[k];
+  return Hd.d.slice(-n).map((d, i, arr) => ({ x: Date.parse(d + "T21:00:00Z"), d, v: Hd.v.slice(-n)[i] }));
+}
+function drawVix() {
+  const t = T[lang];
+  const blk = document.getElementById("vx-block");
+  const V = ALL && ALL.deep && ALL.deep.vix;
+  if (!V || !V.hist) { blk.hidden = true; return; }
+  blk.hidden = false;
+  document.getElementById("t-vx").textContent = t.vxT;
+  const rg = document.getElementById("vx-range");
+  rg.replaceChildren();
+  rg.setAttribute("aria-label", t.vxT);
+  if (!vxSeries(V, vxRange)) vxRange = "year";
+  Object.entries(t.vxRanges).forEach(([k, lbl]) => {
+    const b = h("button", null, lbl);
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(k === vxRange));
+    if (!vxSeries(V, k)) { b.disabled = true; b.title = t.vxNoIntra; }
+    b.addEventListener("click", () => { vxRange = k; try { localStorage.setItem("cycle-vx-range", k); } catch (e) {} drawVix(); });
+    rg.append(b);
+  });
+
+  const pts = vxSeries(V, vxRange);
+  const loc = lang === "fa" ? "fa-IR" : "en-US";
+  const NY = { timeZone: "America/New_York" };
+  const fmtX = (p, long) => p.intra
+    ? new Date(p.x).toLocaleString(loc, Object.assign({}, NY, vxRange === "week" || long ? { weekday: "short", hour: "2-digit", minute: "2-digit" } : { hour: "2-digit", minute: "2-digit" }))
+    : long ? t.date(p.d) : new Date(p.x).toLocaleDateString(loc, vxRange === "month" ? { month: "short", day: "numeric" } : vxRange === "year" ? { month: "short" } : { year: "numeric", month: "short" });
+  const vals = pts.map((p) => p.v);
+  const hi = Math.max(...vals), lo = Math.min(...vals), first = vals[0], last = vals[vals.length - 1];
+  const ltr = (x) => `<b class="ltr">${x}</b>`;
+  const chg = last - first;
+  document.getElementById("vx-stats").innerHTML = t.vxStats(ltr(t.fmt(last, 1)), ltr(t.fmt(hi, 1)), ltr(t.fmt(lo, 1)),
+    ltr((chg > 0 ? "+" : chg < 0 ? "−" : "") + t.fmt(Math.abs(chg), 1)));
+
+  const svg = document.getElementById("vx");
+  svg.setAttribute("aria-label", t.vxT);
+  svg.replaceChildren();
+  document.getElementById("vx-tip").hidden = true;
+  const W = svg.clientWidth || 800, Hh = svg.clientHeight || 260;
+  svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`);
+  const padL = 8, padR = 74, padT = 10, padB = 24;
+  const ymin = Math.max(0, Math.min(lo * 0.9, 12)), ymax = Math.max(44, hi * 1.06);
+  const n = pts.length;
+  const x = (i) => padL + (n === 1 ? 0 : (i / (n - 1)) * (W - padL - padR));
+  const y = (v) => padT + (1 - (v - ymin) / (ymax - ymin)) * (Hh - padT - padB);
+  const A = (o) => o;
+  // Fear zones: 30-40 high fear, 40+ extreme fear (historically a buying chance in stages 2-4)
+  const band = (a, b, col, pct) => svg.append(el("rect", A({ x: padL, width: W - padL - padR, y: y(Math.min(b, ymax)), height: Math.max(0, y(a) - y(Math.min(b, ymax))), style: `fill:color-mix(in srgb, var(${col}) ${pct}%, transparent)` })));
+  band(30, 40, "--warn", 14);
+  band(40, ymax, "--up", 16);
+  [[20, t.vxZone.watch], [30, t.vxZone.high], [40, t.vxZone.fear]].forEach(([lv, lbl]) => {
+    if (lv < ymin || lv > ymax) return;
+    svg.append(el("line", A({ x1: padL, x2: W - padR, y1: y(lv), y2: y(lv), stroke: lv === 20 ? "var(--line)" : lv === 30 ? "var(--warn)" : "var(--up)", "stroke-width": lv === 20 ? 1 : 1.5, "stroke-dasharray": lv === 20 ? "" : "5 4" })));
+    svg.append(el("text", A({ x: W - padR + 6, y: y(lv) + 4 }), `${t.num(lv)} ${lbl}`));
+  });
+  // Time labels: about five, spread evenly
+  const nT = W < 500 ? 3 : 5;
+  for (let k = 0; k < nT; k++) {
+    const i = Math.round((k / (nT - 1)) * (n - 1));
+    const tx = el("text", A({ x: x(i), y: Hh - 6, "text-anchor": k === 0 ? "start" : k === nT - 1 ? "end" : "middle" }), fmtX(pts[i]));
+    svg.append(tx);
+  }
+  // Line, with a surface halo so it reads over the zones
+  const d = pts.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p.v).toFixed(1)).join("");
+  svg.append(el("path", A({ d, fill: "none", stroke: "var(--surface)", "stroke-width": 5, "stroke-linejoin": "round", opacity: 0.85 })));
+  svg.append(el("path", A({ d, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" })));
+  svg.append(el("circle", A({ cx: x(n - 1), cy: y(last), r: 4.5, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2 })));
+
+  // Crosshair + tooltip
+  const cross = el("line", A({ y1: padT, y2: Hh - padB, stroke: "var(--ink)", "stroke-width": 1, opacity: 0, "pointer-events": "none" }));
+  const dot = el("circle", A({ r: 4.5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 2, opacity: 0, "pointer-events": "none" }));
+  const hit = el("rect", A({ x: padL, y: 0, width: W - padL - padR, height: Hh, fill: "transparent" }));
+  svg.append(cross, dot, hit);
+  const tip = document.getElementById("vx-tip"), box = document.getElementById("vx-box");
+  const zoneOf = (v) => v >= 40 ? t.vxZone.fear : v >= 30 ? t.vxZone.high : v >= 20 ? t.vxZone.watch : t.vxZone.calm;
+  const show = (ev) => {
+    const r = svg.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(n - 1, Math.round(((px - padL) / (W - padL - padR)) * (n - 1))));
+    const p = pts[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", 0.35);
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(p.v)); dot.setAttribute("opacity", 1);
+    tip.innerHTML = `<span>${fmtX(p, true)}${p.intra ? " " + t.vxNy : ""}</span><br><b class="ltr num">VIX ${t.fmt(p.v, 2)}</b><span class="st">${zoneOf(p.v)}</span>`;
+    tip.hidden = false;
+    const bx = box.getBoundingClientRect();
+    const tx = (x(i) / W) * r.width + (r.left - bx.left), tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(bx.width - tw, tx < bx.width / 2 ? tx + 12 : tx - tw - 12)) + "px";
+  };
+  const hide = () => { tip.hidden = true; cross.setAttribute("opacity", 0); dot.setAttribute("opacity", 0); };
+  hit.addEventListener("pointermove", show);
+  hit.addEventListener("pointerdown", show);
+  hit.addEventListener("pointerleave", hide);
+  document.getElementById("vx-note").textContent = (pts[0].intra ? t.vxIntraNote + " " : "") + t.vxNote;
+}
+let vxResizeT = null;
+window.addEventListener("resize", () => { clearTimeout(vxResizeT); vxResizeT = setTimeout(drawVix, 150); });
 
 // ---- S&P 500 with each month shaded by its stage ----
 let pcRange = "10";
