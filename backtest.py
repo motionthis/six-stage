@@ -412,6 +412,8 @@ def run(log=print):
                 "start": tested[0] if tested else None,
                 "end": tested[-1] if tested else None,
                 "stages": [stage_at[m] or 0 for m in tested],   # one per month from start; 0 = mixed
+                # mixed months: stock direction tells which of the two mixed patterns it was
+                "mixStocks": {str(i): stock_dir[m] for i, m in enumerate(tested) if stage_at[m] is None},
                 "counts": counts,
                 "mixed": mixed,
                 "sectors": table(sec_acc["all"]),

@@ -45,13 +45,15 @@
   --warm-soft: rgba(196, 150, 80, 0.14);   /* contraction half of the cycle (stages 1-3) */
   --cool-soft: rgba(122, 90, 245, 0.1);    /* expansion half (stages 4-6) */
   --half-c-ink: #93652a;
+  /* Price chart: stages 1-3 in green shades, 4-6 in red shades (light to dark) */
+  --st1: #66c383; --st2: #38a35b; --st3: #1f7a42; --st4: #f19a90; --st5: #e1645a; --st6: #bb382f; --st-band: 100%; --st-deep: 100%;
   --half-e-ink: #6450c4;
   --pick: #2b2f3f;                           /* your selection */
   --pick-soft: rgba(43, 47, 63, 0.07);
   --curve: #2b2f3f;
-  --g-purple: linear-gradient(135deg, #8c66f8 0%, #5a3bef 100%);
-  --g-blue: linear-gradient(135deg, #3db3f9 0%, #2b62ee 100%);
-  --g-teal: linear-gradient(135deg, #43d9c3 0%, #19a8ad 100%);
+  --g-purple: linear-gradient(135deg, #6d4ae8 0%, #4a2bcf 100%);
+  --g-blue: linear-gradient(135deg, #2276d2 0%, #1b4fc0 100%);
+  --g-teal: linear-gradient(135deg, #0f8483 0%, #0b6670 100%);
   --g-orange: linear-gradient(135deg, #ffc04a 0%, #ff7c4c 100%);
   --g-pink: linear-gradient(90deg, #2b2f3f 0%, #474d66 100%);
   --g-up: linear-gradient(135deg, #3fd3bf 0%, #16a6a3 100%);
@@ -72,6 +74,7 @@
     --up: #45d3bf; --up-soft: rgba(63, 211, 191, 0.14); --down: #ff6f86; --down-soft: rgba(255, 111, 134, 0.13);
     --warn: #ffc163; --warn-soft: rgba(255, 193, 99, 0.15); --sel: rgba(232, 235, 243, 0.08); --pick: #e8ebf3; --pick-soft: rgba(232, 235, 243, 0.08); --half-c-ink: #e2bd84; --half-e-ink: #b9a8ff;
     --warm-soft: rgba(214, 170, 100, 0.14); --cool-soft: rgba(155, 131, 255, 0.13); --curve: #e8ebf3;
+    --st1: #33734c; --st2: #469b66; --st3: #5fc283; --st4: #86403c; --st5: #b0514a; --st6: #d96b62; --st-band: 100%; --st-deep: 100%;
     --shadow: none;
     color-scheme: dark;
   }
@@ -141,10 +144,13 @@ svg.pc { display: block; width: 100%; height: 320px; direction: ltr; overflow: v
 @media (max-width: 560px) { svg.pc { height: 240px; } }
 svg.pc text { font-family: var(--font-num); font-size: 11px; fill: var(--muted); }
 svg.pc .grid { stroke: var(--line); stroke-width: 1; }
-svg.pc .band-n { font-size: 10.5px; font-weight: 800; }
+svg.pc .band-n { font-size: 10.5px; font-weight: 800; fill: var(--ink); paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .pc-tip { position: absolute; top: 0; pointer-events: none; background: var(--surface); border-radius: 12px; box-shadow: 0 6px 22px rgba(31,43,59,.16); padding: 8px 12px; font-size: 12.5px; line-height: 1.5; white-space: nowrap; z-index: 2; }
 .pc-tip b { font-size: 13.5px; }
 .pc-tip .st { display: block; font-weight: 700; }
+.pc-tip .mixd { display: block; color: var(--muted); font-size: 12px; }
+.pc-tip .sw.mix, .pc-legend i.mix { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--muted) 45%, var(--tint)) 0 2.5px, var(--tint) 2.5px 5px); box-shadow: inset 0 0 0 1px var(--line); }
+.pc-tip .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 6px; vertical-align: -1px; }
 .pc-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; margin-top: 12px; }
 .pc-legend > span { display: flex; align-items: center; gap: 6px; font-size: 12.5px; background: var(--tint); border-radius: 9px; padding: 5px 10px; min-width: 0; white-space: nowrap; }
 .pc-legend b { font-weight: 700; }
@@ -407,7 +413,7 @@ body.fa table.watch td.num { text-align: right; }
 .fitlbl.warn { color: var(--warn); }
 .fitlbl.muted { color: var(--muted); font-weight: 400; }
 
-/* History + matrix */
+/* History */
 .hist-box { overflow-x: auto; }
 .hist { display: grid; grid-template-columns: 3.5em repeat(12, minmax(30px, 1fr)); gap: 5px; direction: ltr; min-width: 480px; font-size: 12px; }
 .hist .yr { color: var(--muted); align-self: center; font-family: var(--font-num); font-weight: 600; }
@@ -461,21 +467,25 @@ body.fa .seg.period-seg button { letter-spacing: 0; }
 @media (max-width: 1100px) { .cards { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
 .acard { border: 0; border-radius: 18px; color: #fff; padding: 20px; }
-.acard.bonds { background: var(--g-purple); box-shadow: 0 12px 26px rgba(90, 59, 239, 0.25); }
-.acard.stocks { background: var(--g-blue); box-shadow: 0 12px 26px rgba(43, 98, 238, 0.25); }
-.acard.commodities { background: var(--g-teal); box-shadow: 0 12px 26px rgba(25, 168, 173, 0.25); }
+.acard.bonds { background: var(--g-purple); box-shadow: 0 12px 26px rgba(74, 43, 207, 0.25); }
+.acard.stocks { background: var(--g-blue); box-shadow: 0 12px 26px rgba(27, 79, 192, 0.25); }
+.acard.commodities { background: var(--g-teal); box-shadow: 0 12px 26px rgba(11, 102, 112, 0.25); }
 .acard.stage { background: var(--g-orange); box-shadow: 0 12px 26px rgba(255, 124, 76, 0.28); }
 .acard .tile { background: rgba(255, 255, 255, 0.2); color: #fff; }
 .acard-head .t { color: #fff; }
-.acard-head .s { color: rgba(255, 255, 255, 0.8); }
-.acard .pill, .acard .pill.up, .acard .pill.down { background: rgba(255, 255, 255, 0.2); color: #fff; }
-.acard .dbox { border-color: rgba(255, 255, 255, 0.4); }
-.acard .nums, .acard .spark-key { color: rgba(255, 255, 255, 0.82); }
-.acard .nums b { color: #fff; }
+.acard-head .s { color: rgba(255, 255, 255, 0.92); }
+.acard .pill { background: rgba(255, 255, 255, 0.2); color: #fff; font-weight: 700; }
+/* Trend pills: white with green / red text, so rising and falling read at a glance */
+.acard .pill.up { background: #fff; color: #0b7a55; }
+.acard .pill.down { background: #fff; color: #c4253f; }
+.acard .dbox { border-color: rgba(255, 255, 255, 0.45); background: rgba(0, 0, 0, 0.12); }
+.acard .nums, .acard .spark-key { color: rgba(255, 255, 255, 0.95); }
+.acard .nums b { color: #fff; font-weight: 800; }
 .acard .spark-key span::before { border-top-color: #fff; }
-.acard .spark-key span.ma::before { border-top-color: rgba(255, 255, 255, 0.75); }
-.acard svg.spark .area { fill: rgba(255, 255, 255, 0.16); }
-.acard svg.spark .maline { stroke: rgba(255, 255, 255, 0.75); }
+.acard .spark-key span.ma::before { border-top-color: rgba(255, 255, 255, 0.9); }
+.acard svg.spark .area { fill: rgba(255, 255, 255, 0.14); }
+.acard svg.spark .maline { stroke: rgba(255, 255, 255, 0.9); stroke-width: 2px; }
+.acard svg.spark .pline { stroke-width: 2.25px; }
 .acard svg.spark .pline { stroke: #fff; }
 .stage-big { display: flex; align-items: baseline; gap: 10px; }
 .stage-big b { font-family: var(--font-num); font-size: 52px; line-height: 1; font-weight: 800; }
@@ -651,6 +661,9 @@ body.fa .ov-lbl { letter-spacing: 0; font-size: 13.5px; }
 /* Sidebar "Research" label and the group heading in the page */
 .nav-sep { display: block; margin: 14px 30px 4px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--side-muted); }
 body.fa .nav-sep { letter-spacing: 0; font-size: 12.5px; }
+nav > .nav-sep:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+/* Menu jumps land below the pinned settings bar */
+.main > section, .main > div[id] { scroll-margin-top: 72px; }
 @media (max-width: 960px) { .nav-sep { margin: 0 6px; padding: 8px 0 0; border: 0; align-self: center; } }
 .group-title { margin-top: 18px; padding: 18px 4px 0; border-top: 2px dashed var(--dash); }
 .group-title h2 { margin: 0; font-size: 1.4rem; font-weight: 800; }
@@ -800,23 +813,6 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <p class="next-note" id="next-note"></p>
     </section>
 
-    <section class="card" id="after-sec">
-      <div class="card-top">
-        <h2 id="t-after"></h2>
-        <div class="stage-pick" role="group" id="after-pick"></div>
-      </div>
-      <p class="kicker" id="t-after-sub"></p>
-      <p class="after-warn" id="after-warn" hidden></p>
-      <div class="after-grid">
-        <div>
-          <div class="ov-lbl" id="t-after-ret"></div>
-          <div class="after-table" id="after-ret"></div>
-        </div>
-        <div class="after-facts" id="after-facts"></div>
-      </div>
-      <p class="bt-note" id="after-note"></p>
-    </section>
-
     <section class="card" id="deep-sec">
       <div class="card-top">
         <h2 id="t-deep"></h2>
@@ -840,59 +836,6 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <p class="bt-note" id="deep-note"></p>
     </section>
 
-    <section class="card" id="price-sec">
-      <div class="card-top">
-        <h2 id="t-pc"></h2>
-        <div class="seg" role="group" id="pc-range"></div>
-      </div>
-      <p class="kicker" id="t-pc-sub"></p>
-      <div class="pc-box" id="pc-box">
-        <svg class="pc" id="pc" role="img"></svg>
-        <div class="pc-tip" id="pc-tip" hidden></div>
-      </div>
-      <div class="pc-legend" id="pc-legend"></div>
-      <p class="bt-note" id="pc-note"></p>
-    </section>
-
-    <section class="card" id="live">
-      <p class="stale" id="stale" hidden></p>
-      <div class="live-head">
-        <h2 class="h2" id="t-live"></h2>
-        <span class="live-meta" id="live-meta"></span>
-      </div>
-      <span class="live-stage" id="live-stage"></span>
-      <span id="t-period-hint" hidden></span>
-      <div class="cards" id="cards"></div>
-    </section>
-
-    <div class="grid2" id="stage-sec">
-      <section class="card" aria-live="polite">
-        <div class="stage-head"><div class="tile" id="d-tile"></div><div><span class="stage-num" id="d-num"></span><h3 id="d-name"></h3></div></div>
-        <p class="stage-desc" id="d-desc"></p>
-        <div class="assets" id="d-assets"></div>
-        <ul class="macro" id="d-macro"></ul>
-        <div class="rec" id="d-rec"></div>
-      </section>
-
-      <section class="card checker">
-        <h2 id="t-check"></h2>
-        <p class="hint" id="t-hint"></p>
-        <div id="check-rows"></div>
-        <div class="result" id="result"></div>
-      </section>
-    </div>
-
-    <section class="card" id="cycle-sec">
-      <div class="card-top">
-        <h2 id="t-cycle"></h2>
-        <div class="seg period-seg" role="group" data-where="chart"></div>
-      </div>
-      <div class="chart-box">
-        <svg class="cycle" id="cycle" viewBox="0 0 820 392" role="img" aria-labelledby="t-title"></svg>
-        <div class="cycle-legend" id="cycle-legend"></div>
-      </div>
-    </section>
-
     <section class="card" id="watch-sec">
       <h2 id="t-watch"></h2>
       <div class="watch-tools">
@@ -904,6 +847,34 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       </div>
       <p class="watch-count" id="watch-count"></p>
       <div class="table-box"><table class="watch" id="watch"></table></div>
+    </section>
+
+    <section class="card" id="after-sec">
+      <div class="card-top">
+        <h2 id="t-after"></h2>
+        <div class="stage-pick" role="group" id="after-pick"></div>
+      </div>
+      <p class="kicker" id="t-after-sub"></p>
+      <p class="after-warn" id="after-warn" hidden></p>
+      <div class="after-grid">
+        <div>
+          <div class="ov-lbl" id="t-after-ret"></div>
+          <div class="after-table" id="after-ret"></div>
+        </div>
+        <div class="after-facts" id="after-facts"></div>
+      </div>
+      <p class="bt-note" id="after-note"></p>
+    </section>
+
+    <section class="card" id="live">
+      <p class="stale" id="stale" hidden></p>
+      <div class="live-head">
+        <h2 class="h2" id="t-live"></h2>
+        <span class="live-meta" id="live-meta"></span>
+      </div>
+      <span class="live-stage" id="live-stage"></span>
+      <span id="t-period-hint" hidden></span>
+      <div class="cards" id="cards"></div>
     </section>
 
     <section class="card" id="econ-sec">
@@ -923,11 +894,53 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <p class="bt-note" id="econ-note"></p>
     </section>
 
+    <section class="card" id="price-sec">
+      <div class="card-top">
+        <h2 id="t-pc"></h2>
+        <div class="seg" role="group" id="pc-range"></div>
+      </div>
+      <p class="kicker" id="t-pc-sub"></p>
+      <div class="pc-box" id="pc-box">
+        <svg class="pc" id="pc" role="img"></svg>
+        <div class="pc-tip" id="pc-tip" hidden></div>
+      </div>
+      <div class="pc-legend" id="pc-legend"></div>
+      <p class="bt-note" id="pc-note"></p>
+    </section>
+
     <section class="card" id="hist-sec">
       <h2 id="t-hist"></h2>
       <div class="hist-box"><div class="hist" id="hist"></div></div>
       <div class="legend" id="legend"></div>
     </section>
+
+    <section class="card" id="cycle-sec">
+      <div class="card-top">
+        <h2 id="t-cycle"></h2>
+        <div class="seg period-seg" role="group" data-where="chart"></div>
+      </div>
+      <div class="chart-box">
+        <svg class="cycle" id="cycle" viewBox="0 0 820 392" role="img" aria-labelledby="t-title"></svg>
+        <div class="cycle-legend" id="cycle-legend"></div>
+      </div>
+    </section>
+
+    <div class="grid2" id="stage-sec">
+      <section class="card" aria-live="polite">
+        <div class="stage-head"><div class="tile" id="d-tile"></div><div><span class="stage-num" id="d-num"></span><h3 id="d-name"></h3></div></div>
+        <p class="stage-desc" id="d-desc"></p>
+        <div class="assets" id="d-assets"></div>
+        <ul class="macro" id="d-macro"></ul>
+        <div class="rec" id="d-rec"></div>
+      </section>
+
+      <section class="card checker">
+        <h2 id="t-check"></h2>
+        <p class="hint" id="t-hint"></p>
+        <div id="check-rows"></div>
+        <div class="result" id="result"></div>
+      </section>
+    </div>
 
     <div class="group-title" id="research">
       <h2 id="t-research"></h2>
@@ -976,11 +989,6 @@ table.deep-tab tr.bad td:last-child b { color: var(--down); }
       <p class="bt-intro" id="t-strat-rules-hint"></p>
       <div class="table-box"><table class="stab" id="strat-rules"></table></div>
       <p class="bt-note" id="strat-note"></p>
-    </section>
-
-    <section class="card" id="matrix-sec">
-      <h2 id="t-matrix"></h2>
-      <div class="table-box"><table id="matrix"></table></div>
     </section>
 
     <p class="note" id="t-note"></p>
@@ -1072,7 +1080,6 @@ const T = {
     reset: "بازگشت به روند فعلی بازار",
     hist: (m) => `تاریخچه مراحل (پایان هر ماه، میانگین ${Number(m).toLocaleString("fa-IR")} ماهه)`,
     legC: "مراحل ۱ تا ۳ (سمت رکود)", legE: "مراحل ۴ تا ۶ (سمت رونق)", legM: "سیگنال مختلط", legNow: "ماه جاری",
-    matrix: "جدول مراحل",
     peak: "اوج", trough: "کف",
     legNowStage: "مرحله فعلی بازار", legPick: "مرحله انتخاب‌شده شما",
     periodShort: (m) => `${Number(m).toLocaleString("fa-IR")} ماه`,
@@ -1124,7 +1131,7 @@ const T = {
     flipped: "این دارایی جهتش را عوض کرده؛ مرحله بعد ممکن است شروع شده باشد.",
     nextNote: "خلاصه‌ای از الگوهای کلی مدل پرینگ است، نه توصیه سرمایه‌گذاری شخصی.",
     brand: "چرخه شش‌مرحله‌ای",
-    nav: ["امروز", "بعدش چه می‌شود", "خرید عمیق", "قیمت و مراحل", "قیمت‌های زنده", "جزئیات مرحله", "نمودار چرخه", "دارایی‌ها", "اقتصاد", "تاریخچه", "چرخش بخش‌ها", "آزمون راهبرد", "جدول مراحل"],
+    nav: ["امروز", "خرید عمیق", "دارایی‌ها", "بعدش چه می‌شود", "قیمت‌های زنده", "اقتصاد", "قیمت و مراحل", "تاریخچه", "نمودار چرخه", "جزئیات مرحله", "چرخش بخش‌ها", "آزمون راهبرد"],
     afterT: "بعدش چه می‌شود",
     afterSub: (s, a, b) => `در گذشته، پس از هر پایان ماهی که بازار در ${s} بود، چه اتفاقی افتاد؟ داده ماهانه از ${a} تا ${b}.`,
     afterRetT: "بازده بعدی (میانگین و درصد دفعات مثبت)",
@@ -1180,12 +1187,14 @@ const T = {
     deepFactAll: (avg, p) => `هر ماهی، برای مقایسه: یک سال بعد ${avg}، در ${p}٪ ماه‌ها مثبت.`,
     deepNote: "حتی پس از نشانه‌های خوب خرید هم سهام اغلب باز پایین‌تر رفت (تا ۲۴٪ در ۲۰۲۰)، پس خرید پله‌ای بهتر از خرید یک‌جاست. نمونه‌ها کوچک‌اند. بر پایه داده‌های گذشته است، نه توصیه سرمایه‌گذاری شخصی.",
     deepStale: "VIX به‌روز نشد؛ آخرین داده ذخیره‌شده نمایش داده می‌شود.",
-    navResearch: "پژوهش", researchT: "پژوهش", researchSub: "این مدل در گذشته چطور عمل کرده است. برای استفاده روزانه لازم نیست.",
+    navGroups: { now: "الان", why: "چرا", learn: "یادگیری", research: "پژوهش" }, researchT: "پژوهش", researchSub: "این مدل در گذشته چطور عمل کرده است. برای استفاده روزانه لازم نیست.",
     pcT: "شاخص S&P 500 و مراحل چرخه",
     pcSub: "رنگ زمینه، مرحله‌ای است که مدل در پایان هر ماه نشان می‌داد (با میانگین متحرک و قانون تأیید انتخاب‌شده). محور قیمت لگاریتمی است تا درصد تغییرها در همه سال‌ها هم‌اندازه دیده شوند.",
-    pcRanges: { 5: "۵ سال", 10: "۱۰ سال", all: "همه" },
+    pcRanges: { 5: "۵ سال", 10: "۱۰ سال", 20: "۲۰ سال", all: "همه" },
     pcVix: "VIX بالای ۴۰",
     pcMixed: "مختلط",
+    pcMixShort: "م",
+    pcNear: (list) => `نزدیک به مراحل ${list}`,
     pcNow: "اکنون",
     pcMonths: (k) => `${k} ماه`,
     pcNote: (from) => `درصد کنار هر مرحله: بازده سالانه S&P 500 در ماه‌هایی که در آن مرحله بود، در بازه نمایش‌داده‌شده (از ${from}). فقط وقتی نشان داده می‌شود که آن مرحله دست‌کم ۱۲ ماه طول کشیده باشد. بدون سود نقدی. گذشته تضمینی برای آینده نیست.`,
@@ -1367,7 +1376,6 @@ const T = {
     reset: "Reset to current market",
     hist: (m) => `Stage history (month end, ${m}-month average)`,
     legC: "Stages 1–3 (contraction side)", legE: "Stages 4–6 (expansion side)", legM: "Mixed signals", legNow: "Latest month",
-    matrix: "Stage matrix",
     peak: "Peak", trough: "Trough",
     legNowStage: "Current market stage", legPick: "Your selection",
     periodShort: (m) => `${m}m`,
@@ -1419,7 +1427,7 @@ const T = {
     flipped: "This asset has already turned; the next stage may be starting.",
     nextNote: "A summary of general patterns from Pring's model, not personal investment advice.",
     brand: "Six-Stage",
-    nav: ["Today", "What happens next", "Deep buy", "Price & stages", "Live prices", "Stage details", "Cycle chart", "Assets", "Economy", "History", "Sector rotation", "Strategy test", "Stage matrix"],
+    nav: ["Today", "Deep buy", "Assets", "What happens next", "Live prices", "Economy", "Price & stages", "History", "Cycle chart", "Stage details", "Sector rotation", "Strategy test"],
     afterT: "What happens next",
     afterSub: (s, a, b) => `What happened after every month-end the market spent in ${s}? Monthly data from ${a} to ${b}.`,
     afterRetT: "Returns afterwards (average and share of times positive)",
@@ -1475,12 +1483,14 @@ const T = {
     deepFactAll: (avg, p) => `Any month, for comparison: ${avg} a year later, up in ${p}% of months.`,
     deepNote: "Even after good buy signals, stocks often fell further first (up to 24% in 2020), so buying in steps beats buying all at once. The samples are small. Based on past data; not personal investment advice.",
     deepStale: "VIX couldn't be refreshed; showing the last saved reading.",
-    navResearch: "Research", researchT: "Research", researchSub: "How the model has done in the past. Not needed for daily use.",
+    navGroups: { now: "Now", why: "Why", learn: "Learn", research: "Research" }, researchT: "Research", researchSub: "How the model has done in the past. Not needed for daily use.",
     pcT: "S&P 500 and the cycle stages",
     pcSub: "The background shows the stage the model gave at each month-end (with the moving average and confirmation rule chosen above). The price axis is logarithmic, so equal percentage moves look the same size in every year.",
-    pcRanges: { 5: "5 yr", 10: "10 yr", all: "All" },
+    pcRanges: { 5: "5 yr", 10: "10 yr", 20: "20 yr", all: "All" },
     pcVix: "VIX above 40",
     pcMixed: "Mixed",
+    pcMixShort: "M",
+    pcNear: (list) => `Closest to stages ${list}`,
     pcNow: "now",
     pcMonths: (k) => `${k} mo`,
     pcNote: (from) => `Percent next to each stage: the S&P 500's yearly rate of return during months in that stage, over the range shown (from ${from}). Shown only when the stage lasted at least 12 months in total. Price only, no dividends. The past is no guarantee of the future.`,
@@ -1697,7 +1707,7 @@ function drawLive() {
     const chips = h("div", "chiprow");
     chips.append(
       h("span", "pill " + (up ? "up" : "down"), (up ? "↑ " : "↓ ") + (up ? t.rising : t.falling)),
-      h("span", "pill num", `${t.gap} ${(d.gap > 0 ? "+" : "") + t.fmt(d.gap)}%`),
+      (() => { const g = h("span", "pill num"); g.append(t.gap + " ", h("span", "ltr", (d.gap > 0 ? "+" : d.gap < 0 ? "−" : "") + t.fmt(Math.abs(d.gap)) + "%")); return g; })(),
     );
     const box = h("div", "dbox");
     const nums = h("div", "nums");
@@ -1719,21 +1729,21 @@ const ICONS = {
 };
 const NAV_ICONS = [
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></svg>',
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5" opacity=".35" fill="currentColor" stroke="none"/><rect x="13" y="4" width="5" height="16" rx="1.5" opacity=".35" fill="currentColor" stroke="none"/><path d="M3 16l5-5 4 3 9-8"/></svg>',
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg>',
-  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>',
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3-4.5 5-3"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5" opacity=".35" fill="currentColor" stroke="none"/><rect x="13" y="4" width="5" height="16" rx="1.5" opacity=".35" fill="currentColor" stroke="none"/><path d="M3 16l5-5 4 3 9-8"/></svg>',
   '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18" stroke="var(--side)" stroke-width="2"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3-4.5 5-3"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 14c2.5-6 5-6 7.5 0s5 6 7.5 0"/><path d="M6 10c2.5-6 5-6 7.5 0s5 6 7.5 0" opacity=".55"/></svg>',
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l5-7 4 3 8-11"/><path d="M3 21h18"/></svg>',
-  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>',
 ];
-const NAV_IDS = ["today", "after-sec", "deep-sec", "price-sec", "live", "stage-sec", "cycle-sec", "watch-sec", "econ-sec", "hist-sec", "bt-sec", "strat-sec", "matrix-sec"];
-const NAV_RESEARCH_AT = 10;   // a "Research" label goes before this item
+const NAV_IDS = ["today", "deep-sec", "watch-sec", "after-sec", "live", "econ-sec", "price-sec", "hist-sec", "cycle-sec", "stage-sec", "bt-sec", "strat-sec"];
+// Menu groups: a label goes before these items (Now / Why / Learn / Research)
+const NAV_GROUPS = { 0: "now", 4: "why", 8: "learn", 10: "research" };
 // Stage the summary row describes: the live stage, or the selected one when signals are mixed
 const focusIdx = () => liveStageIdx ?? sel;
 const fitsUp = (s) => WATCH.filter((w) => !w.error && w.stages.includes(s + 1) && wp(w).dir > 0);
@@ -1751,7 +1761,7 @@ function drawFrame() {
   const nav = document.getElementById("nav");
   if (!nav.children.length) {
     NAV_IDS.forEach((id, i) => {
-      if (i === NAV_RESEARCH_AT) nav.append(h("span", "nav-sep"));
+      if (NAV_GROUPS[i]) { const g = h("span", "nav-sep"); g.dataset.g = NAV_GROUPS[i]; nav.append(g); }
       const a = h("a");
       a.href = "#" + id;
       a.dataset.id = id;
@@ -1764,11 +1774,10 @@ function drawFrame() {
       });
     }, { rootMargin: "-20% 0px -70% 0px" });
     NAV_IDS.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); });
-    nav.firstChild.classList.add("on");
+    nav.querySelector("a").classList.add("on");
   }
   nav.querySelectorAll("a").forEach((a, i) => { a.querySelector("span").textContent = t.nav[i]; });
-  const sep = nav.querySelector(".nav-sep");
-  if (sep) sep.textContent = t.navResearch;
+  nav.querySelectorAll(".nav-sep").forEach((g) => { g.textContent = t.navGroups[g.dataset.g]; });
   document.getElementById("t-research").textContent = t.researchT;
   document.getElementById("t-research-sub").textContent = t.researchSub;
 
@@ -2696,26 +2705,6 @@ function drawHistory() {
   leg.append(n);
 }
 
-function drawMatrix() {
-  const t = T[lang];
-  const tb = document.getElementById("matrix");
-  tb.replaceChildren();
-  const head = h("tr");
-  head.append(h("th"));
-  STAGES.forEach((_, i) => head.append(h("th", i === sel ? "on" : "", stageLabel(i))));
-  tb.append(head);
-  ASSETS.forEach((a) => {
-    const tr = h("tr");
-    tr.append(h("td", "asset-name", t.assets[a]));
-    STAGES.forEach((s, i) => {
-      const td = h("td", (s[a] > 0 ? "u" : "d") + (i === sel ? " on" : ""), s[a] > 0 ? "↑" : "↓");
-      td.setAttribute("aria-label", s[a] > 0 ? t.rising : t.falling);
-      tr.append(td);
-    });
-    tb.append(tr);
-  });
-}
-
 // ---- Economic check (FRED) ----
 const ECON_KEYS = ["curve", "unemployment", "credit", "production"];
 const stageSide = (s) => (s == null ? null : [3, 4, 5].includes(s) ? "exp" : "con");
@@ -3124,7 +3113,7 @@ function drawDeep() {
 
 function select(i, focus) {
   sel = i;
-  drawFrame(); drawNext(); drawAfter(); drawChart(); drawDetail(); drawWatch(); drawBacktest(); drawStrategy(); drawMatrix();
+  drawFrame(); drawNext(); drawAfter(); drawChart(); drawDetail(); drawWatch(); drawBacktest(); drawStrategy();
   if (focus) document.getElementById("col-" + i).focus();
 }
 
@@ -3138,19 +3127,18 @@ function render() {
   document.getElementById("t-sub").textContent = t.sub;
   document.getElementById("t-check").textContent = t.check;
   document.getElementById("t-hint").textContent = t.hint;
-  document.getElementById("t-matrix").textContent = t.matrix;
   document.getElementById("t-note").textContent = t.note;
   document.getElementById("lang-fa").setAttribute("aria-pressed", String(lang === "fa"));
   document.getElementById("lang-en").setAttribute("aria-pressed", String(lang === "en"));
-  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawPriceChart(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory(); drawMatrix();
+  drawLive(); drawFrame(); drawNext(); drawAfter(); drawDeep(); drawPriceChart(); drawEcon(); drawChart(); drawDetail(); drawChecker(); drawWatch(); drawBacktest(); drawStrategy(); drawHistory();
 }
 
 // ---- S&P 500 with each month shaded by its stage ----
 let pcRange = "10";
-try { const r = localStorage.getItem("cycle-pc-range"); if (["5", "10", "all"].includes(r)) pcRange = r; } catch (e) {}
+try { const r = localStorage.getItem("cycle-pc-range"); if (["5", "10", "20", "all"].includes(r)) pcRange = r; } catch (e) {}
 const ymAdd = (ym, k) => { let [y, m] = ym.split("-").map(Number); m += k; y += Math.floor((m - 1) / 12); m = ((m - 1) % 12 + 12) % 12 + 1; return `${y}-${String(m).padStart(2, "0")}`; };
 const ymDiff = (a, b) => { const [y1, m1] = a.split("-").map(Number), [y2, m2] = b.split("-").map(Number); return (y2 - y1) * 12 + (m2 - m1); };
-const STAGE_FILL = (st) => st ? `color-mix(in srgb, var(${st <= 3 ? "--half-c-ink" : "--half-e-ink"}) ${[10, 22, 38][(st - 1) % 3]}%, transparent)` : "transparent";
+const STAGE_FILL = (st) => st ? `color-mix(in srgb, color-mix(in srgb, var(--st${st}) var(--st-deep), #000) var(--st-band), transparent)` : "transparent";
 
 function pcSeries() {
   const B = ALL && ALL.backtest;
@@ -3162,7 +3150,12 @@ function pcSeries() {
   P.stages.forEach((st, i) => {
     const m = ymAdd(P.start, i), j = ymDiff(B.spx.start, m);
     const v = j >= 0 ? B.spx.v[j] : null;
-    if (v != null) pts.push({ m, v, st });
+    if (v == null) return;
+    const pt = { m, v, st };
+    // Mixed month: the stock direction tells which of the two mixed patterns it was
+    const sd = !st && P.mixStocks ? P.mixStocks[String(i)] : null;
+    if (sd) pt.dirs = sd > 0 ? [-1, 1, -1] : [1, -1, 1];
+    pts.push(pt);
   });
   const last = pts.length ? pts[pts.length - 1].m : null;
   const H = (DATA && DATA.history) || [];
@@ -3170,7 +3163,7 @@ function pcSeries() {
   const L = ALL.deep && ALL.deep.spx;
   if (nowM && last && nowM > last && L && L.now) {
     const hr = H.find((r) => r.month === nowM);
-    pts.push({ m: nowM, v: L.now, st: hr ? hr.stage || 0 : (DATA.stage || 0), now: true });
+    pts.push({ m: nowM, v: L.now, st: hr ? hr.stage || 0 : (DATA.stage || 0), dirs: hr ? hr.dirs : null, now: true });
   }
   return pts;
 }
@@ -3201,7 +3194,7 @@ function drawPriceChart() {
   svg.replaceChildren();
   const W = svg.clientWidth || 800, Hh = svg.clientHeight || 320;
   svg.setAttribute("viewBox", `0 0 ${W} ${Hh}`);
-  const padL = 8, padR = 46, padT = 18, padB = 26;
+  const padL = 8, padR = 46, padT = 36, padB = 26;   // top: VIX marker row, then the stage-number strip
   const n = pts.length;
   const step = (W - padL - padR) / n;
   const xL = (i) => padL + i * step;            // left edge of month i's slot
@@ -3210,17 +3203,21 @@ function drawPriceChart() {
   const y = (v) => padT + (1 - (Math.log(v) - lo) / (hi - lo)) * (Hh - padT - padB);
   const A = (o) => o;
 
+  // Stripe pattern for mixed months
+  const defs = el("defs", {});
+  const pat = el("pattern", A({ id: "pc-mix", width: 7, height: 7, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }));
+  pat.append(el("rect", A({ width: 7, height: 7, style: "fill:var(--tint)" })), el("rect", A({ width: 2.5, height: 7, style: "fill:var(--muted);opacity:.45" })));
+  defs.append(pat);
+  svg.append(defs);
+
   // Stage bands: one rect per run of the same stage, 1px gap between runs
   let i0 = 0;
   for (let i = 1; i <= n; i++) {
     if (i < n && pts[i].st === pts[i0].st) continue;
     const st = pts[i0].st, x0 = xL(i0), x1 = xL(i);
-    if (st) {
-      svg.append(el("rect", A({ x: x0, y: padT - 12, width: Math.max(1, x1 - x0 - 1), height: Hh - padB - padT + 12, fill: STAGE_FILL(st), rx: 2 })));
-      if (x1 - x0 >= 13) {
-        const tx = el("text", A({ x: (x0 + x1) / 2, y: padT - 2, "text-anchor": "middle", class: "band-n", style: `fill:var(${st <= 3 ? "--half-c-ink" : "--half-e-ink"})` }), String(st));
-        svg.append(tx);
-      }
+    svg.append(el("rect", A({ x: x0, y: padT - 12, width: Math.max(1, x1 - x0 - 1), height: Hh - padB - padT + 12, style: `fill:${st ? STAGE_FILL(st) : "url(#pc-mix)"}`, rx: 2 })));
+    if (x1 - x0 >= 13) {
+      svg.append(el("text", A({ x: (x0 + x1) / 2, y: padT - 2, "text-anchor": "middle", class: "band-n" }), st ? String(st) : t.pcMixShort));
     }
     i0 = i;
   }
@@ -3259,14 +3256,17 @@ function drawPriceChart() {
   if (LV && Math.max(LV.now, LV.peak || 0) >= 40 && LV.date) vixMonths.add(LV.date.slice(0, 7));
   pts.forEach((p, i) => {
     if (!vixMonths.has(p.m)) return;
-    const cx = xC(i), cy = Hh - padB - 7;
-    svg.append(el("path", A({ d: `M${cx - 5} ${cy + 4}L${cx + 5} ${cy + 4}L${cx} ${cy - 5}Z`, fill: "var(--ink)" })));
-    svg.append(el("line", A({ x1: cx, x2: cx, y1: y(p.v) + 4, y2: cy - 6, stroke: "var(--ink)", "stroke-width": 1, "stroke-dasharray": "2 3", opacity: 0.5 })));
+    const cx = xC(i);
+    // dotted guide from the marker down to the price that month
+    svg.append(el("line", A({ x1: cx, x2: cx, y1: 15, y2: y(p.v) - 5, stroke: "var(--surface)", "stroke-width": 4, opacity: 0.7 })));
+    svg.append(el("line", A({ x1: cx, x2: cx, y1: 15, y2: y(p.v) - 5, stroke: "var(--ink)", "stroke-width": 1.75, "stroke-dasharray": "5 3", "stroke-linecap": "round" })));
+    svg.append(el("path", A({ d: `M${cx - 5.5} 3L${cx + 5.5} 3L${cx} 13Z`, fill: "var(--ink)" })));
   });
 
   // Price line
   const d = pts.map((p, i) => (i ? "L" : "M") + xC(i).toFixed(1) + " " + y(p.v).toFixed(1)).join("");
-  svg.append(el("path", A({ d, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" })));
+  svg.append(el("path", A({ d, fill: "none", stroke: "var(--surface)", "stroke-width": 5, "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0.85 })));
+  svg.append(el("path", A({ d, fill: "none", stroke: "var(--ink)", "stroke-width": 2.25, "stroke-linejoin": "round", "stroke-linecap": "round" })));
   // Latest point
   const li = n - 1;
   svg.append(el("circle", A({ cx: xC(li), cy: y(pts[li].v), r: 4.5, fill: "var(--accent)", stroke: "var(--surface)", "stroke-width": 2 })));
@@ -3287,8 +3287,10 @@ function drawPriceChart() {
     dot.setAttribute("cx", xC(i)); dot.setAttribute("cy", y(p.v)); dot.setAttribute("opacity", 1);
     const mon = p.now ? t.pcNow + " · " + t.date(DATA.asOf) : new Date(p.m + "-15T12:00:00").toLocaleDateString(lang === "fa" ? "fa-IR" : "en-US", { year: "numeric", month: "short" });
     tip.innerHTML = `<span>${mon}</span><br><b class="ltr num">${t.fmt(p.v, 0)}</b>`
-      + `<span class="st" style="color:var(${p.st ? (p.st <= 3 ? "--half-c-ink" : "--half-e-ink") : "--muted"})">${p.st ? stageLabel(p.st - 1) + " · " + t.names[p.st - 1] : t.pcMixed}</span>`
-      + (vixMonths.has(p.m) ? `<span>▲ ${t.pcVix}</span>` : "");
+      + `<span class="st">${p.st ? `<i class="sw" style="background:color-mix(in srgb, var(--st${p.st}) var(--st-deep), #000)"></i>` + stageLabel(p.st - 1) + " · " + t.names[p.st - 1] : `<i class="sw mix"></i>` + t.pcMixed}</span>`
+      + (!p.st && p.dirs ? `<span class="mixd">${ASSETS.map((k, j) => `${t.assets[k]} ${p.dirs[j] > 0 ? "↑" : "↓"}`).join(" · ")}</span><span class="mixd">${t.pcNear(
+          STAGES.map((S0, si) => ASSETS.filter((k, j) => S0[k] !== p.dirs[j]).length === 1 ? t.num(si + 1) : null).filter(Boolean).join(lang === "fa" ? "، " : ", "))}</span>` : "")
+      + (vixMonths.has(p.m) ? `<span>▼ ${t.pcVix}</span>` : "");
     tip.hidden = false;
     const bx = box.getBoundingClientRect();
     const tx = (xC(i) / W) * r.width + (r.left - bx.left);
@@ -3316,8 +3318,9 @@ function drawPriceChart() {
       const ann = (Math.pow(g.reduce((a, b) => a * b, 1), 12 / k) - 1) * 100;
       r = `<span class="r ltr ${ann >= 0 ? "pos" : "neg"}">${(ann >= 0 ? "+" : "−") + t.fmt(Math.abs(ann), 0)}%</span>`;
     }
-    return `<span><i style="background:${STAGE_FILL(st)};box-shadow:inset 0 0 0 1px var(--line)"></i><b>${stageLabel(st - 1)}</b>${r}<em>${t.pcMonths(t.num(k))}</em></span>`;
-  }).join("") + `<span class="vx"><i>▲</i>${t.pcVix}</span>`;
+    return `<span><i style="background:color-mix(in srgb, var(--st${st}) var(--st-deep), #000)"></i><b>${stageLabel(st - 1)}</b>${r}<em>${t.pcMonths(t.num(k))}</em></span>`;
+  }).join("") + `<span><i class="mix"></i><b>${t.pcMixed}</b><em>${t.pcMonths(t.num(pts.filter((p) => !p.st).length))}</em></span>`
+    + `<span class="vx"><i>▼</i>${t.pcVix}</span>`;
   const from = new Date(pts[0].m + "-15T12:00:00").toLocaleDateString(lang === "fa" ? "fa-IR" : "en-US", { year: "numeric", month: "short" });
   document.getElementById("pc-note").textContent = t.pcNote(from);
 }
