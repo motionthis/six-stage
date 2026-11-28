@@ -111,6 +111,35 @@ def first_available(candidates, log):
     return None, {}
 
 
+def gold_history(first, log):
+    """Gold: GLD where it exists (no missing months), gold futures (GC=F) only before it.
+
+    Yahoo's monthly GC=F series skips dozens of months (May 2022 among them), which left
+    rare stages without enough gold returns. The futures part is rescaled to join GLD smoothly.
+    """
+    try:
+        gld = fetch_monthly("GLD")
+    except Exception as exc:
+        log(f"  GLD: {exc}")
+        return first
+    sym, fut = first
+    if sym != "GC=F":
+        try:
+            fut = fetch_monthly("GC=F")
+        except Exception:
+            fut = {}
+    if not gld:
+        return first
+    join = min(gld)
+    if join in fut and fut[join]:
+        scale = gld[join] / fut[join]
+        out = {m: v * scale for m, v in fut.items() if m < join}
+    else:
+        out = {}
+    out.update(gld)
+    return ("GC=F+GLD" if out.keys() - gld.keys() else "GLD"), out
+
+
 def stage_of(dirs):
     for i, s in enumerate(STAGES):
         if s == dirs:
@@ -338,6 +367,7 @@ def run(log=print):
         if data:
             sectors[sym] = data
     classes = {k: get(c) for k, c in ASSET_CLASSES.items()}
+    classes["gold"] = gold_history(classes["gold"], log)
     cash_yield = classes["cash"][1]
 
     months = sorted(set.intersection(*(set(d) for _, d in core.values())))
